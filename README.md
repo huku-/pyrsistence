@@ -1,6 +1,8 @@
-# pyrsistence - A Python extension for External Memory Data Structures (EMDs)
+# pyrsistence - A Python extension for managing External Memory Data Structures (EMDs)
 
 huku &lt;[huku@grhack.net](mailto:huku@grhack.net)&gt;
+
+<a href="https://pledgie.com/campaigns/31289"><img alt="" src="https://pledgie.com/campaigns/31289.png?skin_name=chrome" border="0" ></a>
 
 
 ## About
@@ -24,6 +26,9 @@ well. Halvar Flake describes this class of problems in his [DailyDave](https://l
 post entitled ["Code analysis and scale"](https://lists.immunityinc.com/pipermail/dailydave/2015-September/000992.html).
 
 For more information on EMDs have a look at the references.
+
+Also, [this is why](https://github.com/huku-/pyrsistence/issues/1) I haven't
+uploaded the code yet.
 
 
 ## Compiling pyrsistence
@@ -78,9 +83,6 @@ For more information on **pyrsistence**, have a look at the
     better.
   * Organize free chunks in free-lists instead of a red-black tree.
   * Hybrid main/external memory model?
-  * Develop a server component in pure Python as a simple alternative to
-    [memcached](https://github.com/memcached/memcached) or
-    [redis](https://github.com/antirez/redis)?
 
 
 ## References

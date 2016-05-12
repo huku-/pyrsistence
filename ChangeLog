@@ -1,0 +1,5 @@
+2016-05-12 huku <huku@grhack.net>
+
+    * First experimental release; partial support for external memory
+      dictionaries and external memory lists.
+

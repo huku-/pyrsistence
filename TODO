@@ -1,0 +1,6 @@
+2016-05-12 huku <huku@grhack.net>
+
+    * Fix "XXX" in "mapped_file.c"!
+    * Replace red-black tree with per-size free-lists a-la TCMalloc.
+    * Replace `mapped_file_get_eof()' with `mapped_file_seek(..., 0, SEEK_END)'?
+

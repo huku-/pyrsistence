@@ -27,9 +27,6 @@ post entitled ["Code analysis and scale"](https://lists.immunityinc.com/pipermai
 
 For more information on EMDs have a look at the references.
 
-Also, [this is why](https://github.com/huku-/pyrsistence/issues/1) I haven't
-uploaded the code yet.
-
 
 ## Compiling pyrsistence
 

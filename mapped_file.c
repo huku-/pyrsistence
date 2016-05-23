@@ -595,14 +595,14 @@ int mapped_file_truncate(mapped_file_t *mf, size_t size)
     void *mf_address = mf->address;
     int ret = -1;
 
-    /* XXX: If `map_file()' below fails, we are fucked. We need to make sure
-     * the state of `mf' is always consistent.
-     */
-    UnmapViewOfFile(mf_address);
-
     lsize.QuadPart = size;
     if((address = map_file(mf->fd, lsize)) == NULL)
         goto _err;
+
+    /* Unmap the old mapping only as soon as we have succesfully allocated a new
+     * one. Unfortunately, there's no `mremap()' equivalent on Microsoft Windows.
+     */
+    UnmapViewOfFile(mf_address);
 
     mf->address = address;
     mf->size = size;
@@ -845,18 +845,89 @@ _err:
 /* Equivalent to `ftruncate()' for memory mapped files. */
 int mapped_file_truncate(mapped_file_t *mf, size_t size)
 {
-    void *address;
-    void *mf_address = mf->address;
+    long pagesize;
+
+    void *mf_address = mf->address, *address = NULL;
     size_t mf_size = mf->size;
-    int ret = -1;
+    int mf_fd = mf->fd;
 
-    /* XXX: If `map_file()' below fails, we are fucked. We need to make sure
-     * the state of `mf' is always consistent.
+
+    if(size > SSIZE_MAX)
+        goto _err1;
+
+    if(size == mf_size)
+        goto _ok;
+
+
+    /* Truncate the file to the requested size first. If resizing the memory
+     * mapping fails, we can easily restore the original file size by calling
+     * `ftruncate()' again.
      */
-    munmap(mf_address, mf_size);
+    if(ftruncate(mf_fd, size) != 0)
+    {
+        serror("mapped_file_truncate: ftruncate");
+        goto _err1;
+    }
 
-    if((address = map_file(mf->fd, size)) == NULL)
-        goto _err;
+    /* When shrinking the memory mapped file, just unmap part of the mapping. */
+    if(size < mf_size)
+    {
+        /* According to the manual page, this is the portable way of reading the
+         * system's page size.
+         */
+        if((pagesize = sysconf(_SC_PAGESIZE)) == -1)
+        {
+            serror("mapped_file_truncate: sysconf");
+            goto _err2;
+        }
+
+        /* Align sizes to the next multiple of the page size, as `munmap()' will
+         * unmap any page overlapping with the given argument.
+         */
+        size = (size + pagesize - 1) & ~(pagesize - 1);
+        mf_size = (mf_size + pagesize - 1) & ~(pagesize - 1);
+
+        if(munmap((char *)mf_address + size, mf_size - size) != 0)
+        {
+            serror("mapped_file_truncate: munmap");
+            goto _err2;
+        }
+
+        address = mf_address;
+    }
+
+    /* When increasing the size of the memory mapped file, we have to re-map the
+     * underlying file pages.
+     */
+    else if(size > mf_size)
+    {
+#if defined __linux__ || defined __NetBSD__
+        /* Linux and NetBSD implement `mremap()'. I haven't tested the code on
+         * NetBSD, but this is good news anyway.
+         */
+        address = mremap(mf_address, mf_size, size, MREMAP_MAYMOVE);
+
+        if(address == MAP_FAILED)
+        {
+            serror("mapped_file_truncate: mremap");
+            goto _err2;
+        }
+#else
+        /* On other OSes, like MacOS X and FreeBSD, we have to take the slow path
+         * which involves creating a larger memory mapping and then unmapping the
+         * old one.
+         */
+        address = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, mf_fd, 0);
+
+        if(address == MAP_FAILED)
+        {
+            serror("mapped_file_truncate: mmap");
+            goto _err2;
+        }
+
+        munmap(mf_address, mf_size);
+#endif
+    }
 
     mf->address = address;
     mf->size = size;
@@ -865,10 +936,14 @@ int mapped_file_truncate(mapped_file_t *mf, size_t size)
     if(mf->eof > size)
         mf->eof = size;
 
-    ret = 0;
+_ok:
+    return 0;
 
-_err:
-    return ret;
+_err2:
+    ftruncate(mf_fd, mf_size);
+
+_err1:
+    return -1;
 }
 
 

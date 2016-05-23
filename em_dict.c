@@ -100,7 +100,7 @@ static PyObject *em_dict_iter_iternext(em_dict_iter_t *self)
     size_t pos = self->pos;
     em_dict_t *em_dict = self->em_dict;
 
-    PyObject *key, *value, *r = NULL;
+    PyObject *key = NULL, *value = NULL, *r = NULL;
 
 
     /* If we haven't finished iterating the elements of the external memory

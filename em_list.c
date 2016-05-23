@@ -137,13 +137,11 @@ static PyObject *em_list_getitem(em_list_t *self, PyObject *key)
 static int em_list_setitem_internal(em_list_t *self, Py_ssize_t index,
         PyObject *value)
 {
-    em_list_index_hdr_t *index_hdr;
     em_list_index_ent_t ent;
     ssize_t value_pos;
 
     int ret = -1;
 
-    index_hdr = self->index->address;
 
     if(em_list_get_entry(self->index, &ent, (size_t)index) != 0)
     {

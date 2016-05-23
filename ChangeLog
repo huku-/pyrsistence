@@ -1,3 +1,12 @@
+2016-05-23 huku <huku@grhack.net>
+
+    * Use `mremap()' on Linux and NetBSD (not yet tested) to truncate memory
+      mapped files.
+    * Fixed several compiler warnings.
+    * Added ".gitignore".
+    * Re-organized file "TODO".
+
+
 2016-05-12 huku <huku@grhack.net>
 
     * First experimental release; partial support for external memory

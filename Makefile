@@ -5,10 +5,10 @@ BIN=pyrsistence.so
 PYTHON_INCLUDES=$(shell python2.7-config --includes)
 PYTHON_LIBS=$(shell python2.7-config --libs)
 
-# D=-D DEBUG
+# D=-D DEBUG -ggdb
 D=
 CFLAGS=-Wall -Wno-unused-result -Wno-strict-aliasing -O2 $(PYTHON_INCLUDES) \
-    -fPIC -g $(D)
+    -fPIC $(D)
 LDFLAGS=$(PYTHON_LIBS) -shared
 
 all: $(OBJS)

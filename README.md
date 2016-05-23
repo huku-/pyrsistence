@@ -71,17 +71,6 @@ For more information on **pyrsistence**, have a look at the
 [wiki](https://github.com/huku-/pyrsistence/wiki).
 
 
-## TODO
-
-  * Add support for compression and encryption.
-  * Optimize datastructures (compaction, removal of unused entries etc).
-  * Use locking for concurrency?
-  * Change **EMDict** hashing function; linear probing will probably perform
-    better.
-  * Organize free chunks in free-lists instead of a red-black tree.
-  * Hybrid main/external memory model?
-
-
 ## References
 
   * Halvar's [Code analysis and scale](https://lists.immunityinc.com/pipermail/dailydave/2015-September/000992.html)

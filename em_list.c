@@ -564,7 +564,7 @@ static PyMappingMethods mapping_proto =
 
 static PyMethodDef methods[] =
 {
-    M_NOARGS("open", em_list_open),
+    M_VARARGS("open", em_list_open),
     M_VARARGS("append", em_list_append),
     M_NOARGS("close", em_list_close),
     M_NULL

@@ -887,7 +887,8 @@ int mapped_file_truncate(mapped_file_t *mf, size_t size)
         size = (size + pagesize - 1) & ~(pagesize - 1);
         mf_size = (mf_size + pagesize - 1) & ~(pagesize - 1);
 
-        if(munmap((char *)mf_address + size, mf_size - size) != 0)
+        if(size < mf_size &&
+                munmap((char *)mf_address + size, mf_size - size) != 0)
         {
             serror("mapped_file_truncate: munmap");
             goto _err2;

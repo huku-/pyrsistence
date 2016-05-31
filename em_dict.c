@@ -374,6 +374,17 @@ _err:
 
 
 
+/* Sequence protocol implementation. */
+
+/* Callback for Python's `in' operator. */
+static int em_dict_contains(em_dict_t *self, PyObject *key)
+{
+    size_t i;
+    return em_dict_lookup(self, key, &i) != 0 ? 0 : 1;
+}
+
+
+
 /* Mapping protocol implementation. */
 
 /* Callback for Python's `len()'. */
@@ -442,19 +453,31 @@ static int em_dict_setitem(em_dict_t *self, PyObject *key, PyObject *value)
             mapped_file_free_chunk(values, value_pos);
         }
 
-        /* Marshal the key object only if it's not already in the dictionary. */
-        if(key_pos == 0 && (key_pos = mapped_file_marshal_object(keys, key)) < 0)
-            goto _err;
-
-        /* Marshal the new value object. */
-        if((value_pos = mapped_file_marshal_object(values, value)) < 0)
-            goto _err;
-
-        /* Build a new index entry. */
+        /* Now clear the index entry (indicates a free element). */
         memset(&ent, 0, sizeof(ent));
-        ent.hash = hash;
-        ent.key_pos = key_pos;
-        ent.value_pos = value_pos;
+
+        /* If value object is not `NULL' populate the index entry accordingly.
+         * Otherwise, a `del' statement was used and the indicated element must
+         * be marked as free.
+         */
+        if(value != NULL)
+        {
+            /* Marshal key object only if it's not already in the dictionary. */
+            if(key_pos == 0 &&
+                    (key_pos = mapped_file_marshal_object(keys, key)) < 0)
+                goto _err;
+
+            /* Marshal new value object. */
+            if((value_pos = mapped_file_marshal_object(values, value)) < 0)
+                goto _err;
+
+            /* Populate new index entry. */
+            ent.hash = hash;
+            ent.key_pos = key_pos;
+            ent.value_pos = value_pos;
+        }
+
+        /* Write updated index entry. */
         em_dict_set_entry(index, &ent, i);
 
         index_hdr = index->address;
@@ -769,6 +792,19 @@ static void em_dict_dealloc(em_dict_t *self)
 }
 
 
+static PySequenceMethods em_dict_sequence_proto =
+{
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    (objobjproc)em_dict_contains,
+    NULL,
+    NULL
+};
 
 static PyMappingMethods em_dict_mapping_proto =
 {
@@ -779,7 +815,7 @@ static PyMappingMethods em_dict_mapping_proto =
 
 static PyMethodDef em_dict_methods[] =
 {
-    M_NOARGS("open", em_dict_open),
+    M_VARARGS("open", em_dict_open),
     M_NOARGS("items", em_dict_items),
     M_NOARGS("keys", em_dict_keys),
     M_NOARGS("values", em_dict_values),
@@ -807,6 +843,7 @@ static void initialize_em_dict_type(PyTypeObject *type)
     type->tp_name = "pyrsistence.EMDict";
     type->tp_basicsize = sizeof(em_dict_t);
     type->tp_dealloc = (destructor)em_dict_dealloc;
+    type->tp_as_sequence = &em_dict_sequence_proto;
     type->tp_as_mapping = &em_dict_mapping_proto;
     type->tp_flags = Py_TPFLAGS_DEFAULT;
     type->tp_doc = "External memory dictionary implementation.";

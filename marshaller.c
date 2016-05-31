@@ -62,14 +62,28 @@ _err:
 /* Marshal object `obj' and return a string object. */
 PyObject *marshal(PyObject *obj)
 {
-    return PyObject_CallFunctionObjArgs(marshal_method, obj, proto, NULL);
+    PyObject *r = NULL;
+
+    /* A `NULL' value in `obj' will prematurely terminate the argument list of
+     * the dynamic function call below!
+     */
+    if(obj != NULL)
+        r = PyObject_CallFunctionObjArgs(marshal_method, obj, proto, NULL);
+    return r;
 }
 
 
 /* Unmarshal object from string object `obj'. */
 PyObject *unmarshal(PyObject *obj)
 {
-    return PyObject_CallFunctionObjArgs(unmarshal_method, obj, NULL);
+    PyObject *r = NULL;
+
+    /* A `NULL' value in `obj' will prematurely terminate the argument list of
+     * the dynamic function call below!
+     */
+    if(obj != NULL)
+        r = PyObject_CallFunctionObjArgs(unmarshal_method, obj, NULL);
+    return r;
 }
 
 

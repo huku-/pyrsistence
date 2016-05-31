@@ -1,3 +1,13 @@
+2016-05-31 huku <huku@grhack.net>
+
+    * Implemented `in' and `del' operators for external memory dictionaries.
+    * Method `open()' in classes `EMDict' and `EMList' was erroneously marked
+      as `M_NOARGS'.
+    * Take care of invalid calls to `munmap(..., 0)' in `mapped_file_truncate()'
+      in "mapped_file.c".
+    * Added sanity checks in "marshaller.c" (see relative comment).
+
+
 2016-05-23 huku <huku@grhack.net>
 
     * Use `mremap()' on Linux and NetBSD (not yet tested) to truncate memory

@@ -1,3 +1,9 @@
+2016-08-29 huku <huku@grhack.net>
+
+    * Added "setup.py" and "install" target in "Makefile" and "Makefile.nmake".
+    * Fixed some typos in comments etc.
+
+
 2016-05-31 huku <huku@grhack.net>
 
     * Implemented `in' and `del' operators for external memory dictionaries.

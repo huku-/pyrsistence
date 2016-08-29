@@ -54,15 +54,20 @@ Z:\pyrsistence>nmake /F Makefile.nmake
 In newer versions of Visual Studio you might need to replace the **amd64**
 argument with **x86_amd64**.
 
+To install **pyrsistence** issue the following command:
+
+```
+Z:\pyrsistence>nmake /F Makefile.nmake install
+```
 
 ### MacOS X
 
-Just enter the top-level directory and run **make**.
+Just enter the top-level directory and run **make** and **make install**.
 
 
 ### Linux
 
-Just enter the top-level directory and run **make**.
+Just enter the top-level directory and run **make** and **make install**.
 
 
 ## Using pyrsistence

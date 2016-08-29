@@ -3,7 +3,7 @@
     * Add support for compression and encryption.
     * Optimize datastructures (compaction, removal of unused entries etc).
     * Use locking for concurrency?
-    * Change **EMDict** hashing function; linear probing will probably perform
+    * Change `EMDict' hashing function; linear probing will probably perform
       better.
     * Replace red-black tree with per-size free-lists a-la TCMalloc.
     * Replace `mapped_file_get_eof()' with `mapped_file_seek(..., 0, SEEK_END)'?

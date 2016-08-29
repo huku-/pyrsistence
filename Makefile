@@ -16,7 +16,11 @@ all: $(OBJS)
 
 .PHONY: clean
 clean:
-	rm -fr $(OBJS) $(BIN)
+	rm -fr $(OBJS) $(BIN) build
+
+.PHONY: install
+install:
+	python setup.py install
 
 .PHONY: test
 test:

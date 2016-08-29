@@ -20,8 +20,11 @@ LDFLAGS=/nologo /DEBUG /DYNAMICBASE /NXCOMPAT /WX /DLL \
 $(BIN): $(OBJS)
 	link $(OBJS) /OUT:$(BIN) $(LDFLAGS)
 
+install:
+	python setup.py install
+
 clean:
-	del /F *.ilk *.obj *.dll *.lib *.pyd *.exp *.pdb
+	del /F *.ilk *.obj *.dll *.lib *.pyd *.exp *.pdb build
 
 test:
 	set PYTHONPATH=.

@@ -41,7 +41,7 @@ def main(argv):
     t3 = time.time()
     util.msg('Done in %d sec.' % (t3 - t2))
 
-    # Close and remove external memory dictionary from disk.
+    # Close and remove external memory list from disk.
     em_list.close()
     shutil.rmtree(dirname)
 

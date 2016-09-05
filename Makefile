@@ -14,13 +14,13 @@ LDFLAGS=$(PYTHON_LIBS) -shared
 all: $(OBJS)
 	$(CC) $(OBJS) -o $(BIN) $(LDFLAGS)
 
-.PHONY: clean
-clean:
-	rm -fr $(OBJS) $(BIN) build
-
 .PHONY: install
 install:
 	python setup.py install
+
+.PHONY: clean
+clean:
+	rm -fr $(OBJS) $(BIN) build
 
 .PHONY: test
 test:

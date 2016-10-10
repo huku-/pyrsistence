@@ -70,6 +70,18 @@ Just enter the top-level directory and run **make** and **make install**.
 Just enter the top-level directory and run **make** and **make install**.
 
 
+## Precompiled binaries
+
+Below is a list of experimental, precompiled binaries for all supported platforms.
+
+  * [pyrsistence-win-vs2012-python27.tgz](https://www.grhack.net/pyrsistence-win-vs2012-python27.tgz)
+    (Microsoft Windows, Visual Studio 2012, Python 2.7)
+  * [pyrsistence-macosx-llvm730-python27.tgz](https://www.grhack.net/pyrsistence-macosx-llvm730-python27.tgz)
+    (MacOS X, LLVM 7.3.0, Python 2.7)
+  * [pyrsistence-linux-gcc484-python27.tgz](https://www.grhack.net/pyrsistence-linux-gcc484-python27.tgz)
+    (Linux, GCC 4.8.4, Python 2.7)
+
+
 ## Using pyrsistence
 
 For more information on **pyrsistence**, have a look at the

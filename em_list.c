@@ -249,7 +249,7 @@ static int em_list_resize(em_list_t *self)
     }
 
 
-    debug_printf("EMList: Resizing");
+    msgf("EMList: Resizing");
 
     filename = path_combine(self->dirname, "index.bin.1");
     if((mf = mapped_file_create(filename, new_size)) == NULL)
@@ -258,7 +258,7 @@ static int em_list_resize(em_list_t *self)
     /* Copy old entries to the new external memory list. */
     memcpy(mf->address, self->index->address, EM_LIST_E2S(capacity));
 
-    debug_printf("EMList: Resize successful");
+    msgf("EMList: Resize successful");
 
 
     filename = path_combine(self->dirname, "index.bin.0");

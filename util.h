@@ -11,7 +11,7 @@
 #endif
 
 
-void debug_printf(const char *, ...);
+void msgf(const char *, ...);
 void serror(const char *);
 char *path_combine(const char *, const char *);
 int mk_dir(const char *);

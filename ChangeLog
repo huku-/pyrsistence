@@ -2,6 +2,9 @@
 
     * Implemented iterator for class `EMList'.
     * Added iterator benchmark for external memory lists.
+    * Renamed `debug_printf()' to `msgf()' to avoid symbol name collision when
+      used within GDB's Python.
+    * Added precompiled binaries for all platforms.
     * Replaced whitespace with tabs in makefiles.
 
 

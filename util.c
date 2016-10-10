@@ -8,7 +8,7 @@
 
 
 /* Prints a debugging message if `DEBUG' is defined. */
-void debug_printf(const char *fmt, ...)
+void msgf(const char *fmt, ...)
 {
 #ifdef DEBUG
     char ftime[BUFSIZ], new_fmt[BUFSIZ];

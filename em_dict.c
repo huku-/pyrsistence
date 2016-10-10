@@ -304,7 +304,7 @@ static int em_dict_resize(em_dict_t *self)
     if(new_num_ents < num_ents || new_size < size)
         goto _err;
 
-    debug_printf("EMDict: Resizing");
+    msgf("EMDict: Resizing");
 
     filename = path_combine(self->dirname, "index.bin.1");
     if((mf = mapped_file_create(filename, new_size)) == NULL)
@@ -316,7 +316,7 @@ static int em_dict_resize(em_dict_t *self)
     new_index_hdr->used = 0;
     new_index_hdr->mask = new_mask;
 
-    debug_printf("EMDict: Rehashing");
+    msgf("EMDict: Rehashing");
 
     /* Rehash all dictionary entries in the new index file. */
     for(i = 0; i < num_ents; i++)
@@ -346,7 +346,7 @@ static int em_dict_resize(em_dict_t *self)
         }
     }
 
-    debug_printf("EMDict: Resize successful");
+    msgf("EMDict: Resize successful");
 
     /* Move the new mapped file over the old one. When the file is closed below,
      * the kernel will remove it from our filesystem because the link count will

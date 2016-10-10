@@ -2,9 +2,10 @@ PYTHON27_PREFIX=C:\Python27
 PYTHON27_HEADERS=$(PYTHON27_PREFIX)\include
 PYTHON27_LIBS=$(PYTHON27_PREFIX)\libs
 
-TESTS=em_dict_basic em_dict_check em_dict_iter em_list_basic em_list_check
+TESTS=em_dict_basic em_dict_check em_dict_iter \
+	em_list_basic em_list_check em_list_iter
 OBJS=util.obj marshaller.obj rbtree.obj mapped_file.obj em_dict.obj em_list.obj \
-    pyrsistence.obj
+	pyrsistence.obj
 BIN=pyrsistence.pyd
 
 W=/W3 /wd4995 /wd4996
@@ -14,7 +15,7 @@ CFLAGS=/nologo /O2 /GS /I $(PYTHON27_HEADERS) /MT $(W) $(D)
 
 
 LDFLAGS=/nologo /DEBUG /DYNAMICBASE /NXCOMPAT /WX /DLL \
-    /LIBPATH:$(PYTHON27_LIBS) /DEFAULTLIB:python27.lib
+	/LIBPATH:$(PYTHON27_LIBS) /DEFAULTLIB:python27.lib
 
 
 $(BIN): $(OBJS)

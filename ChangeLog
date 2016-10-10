@@ -1,3 +1,10 @@
+2016-10-10 huku <huku@grhack.net>
+
+    * Implemented iterator for class `EMList'.
+    * Added iterator benchmark for external memory lists.
+    * Replaced whitespace with tabs in makefiles.
+
+
 2016-08-29 huku <huku@grhack.net>
 
     * Added "setup.py" and "install" target in "Makefile" and "Makefile.nmake".

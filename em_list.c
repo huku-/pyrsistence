@@ -338,6 +338,89 @@ _err:
 
 
 
+/* External memory list iterator interface. */
+
+/* Iterator's `__iter__()' method. */
+static PyObject *em_list_iter_iter(em_list_iter_t *self)
+{
+    Py_INCREF(self);
+    return (PyObject *)self;
+}
+
+
+/* Iterator's `next()' method. */
+static PyObject *em_list_iter_iternext(em_list_iter_t *self)
+{
+    em_list_t *em_list = self->em_list;
+    size_t pos = self->pos;
+
+    PyObject *r = NULL;
+
+    if(pos < self->maxpos)
+    {
+        r = em_list_getitem_internal(em_list, pos);
+        pos += 1;
+        self->pos = pos;
+    }
+    else
+        PyErr_SetNone(PyExc_StopIteration);
+
+    return r;
+}
+
+static void em_list_iter_dealloc(em_list_iter_t *self)
+{
+    Py_DECREF(self->em_list);
+    PyObject_Del(self);
+}
+
+
+static PyTypeObject em_list_iter_type;
+
+
+static void initialize_em_list_iter_type(PyTypeObject *type)
+{
+    PyObject type_base =
+    {
+        PyObject_HEAD_INIT(NULL)
+    };
+
+    *(PyObject *)type = type_base;
+    type->tp_name = "pyrsistence._EMListIter";
+    type->tp_basicsize = sizeof(em_list_iter_t);
+    type->tp_dealloc = (destructor)em_list_iter_dealloc;
+    type->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER;
+    type->tp_doc = "Internal EMList iterator object.";
+    type->tp_iter = (getiterfunc)em_list_iter_iter;
+    type->tp_iternext = (iternextfunc)em_list_iter_iternext;
+}
+
+
+
+/* This is the `tp_iter()' method of `EMList' object. */
+static PyObject *em_list_iter(em_list_t *self)
+{
+    em_list_index_hdr_t *index = self->index->address;
+
+    em_list_iter_t *iter;
+
+    if((iter = PyObject_New(em_list_iter_t, &em_list_iter_type)) != NULL)
+    {
+        PyObject_Init((PyObject *)iter, &em_list_iter_type);
+        Py_INCREF(self);
+
+        iter->em_list = self;
+        iter->pos = 0;
+        iter->maxpos = index->capacity;
+    }
+    else
+        PyErr_SetString(PyExc_RuntimeError, "Failed to initialize iterator");
+
+    return (PyObject *)iter;
+}
+
+
+
 /* Standard interface to `open()' and `close()'. */
 
 /* Create a new external memory list. */
@@ -583,6 +666,7 @@ static PyObject type_base =
 static PyTypeObject type;
 
 
+
 /* Initialization of `pyrsistence.EMList' type should go here. */
 static void initialize_em_list_type(PyTypeObject *type)
 {
@@ -593,6 +677,7 @@ static void initialize_em_list_type(PyTypeObject *type)
     type->tp_as_mapping = &mapping_proto;
     type->tp_flags = Py_TPFLAGS_DEFAULT;
     type->tp_doc = "External memory list implementation.";
+    type->tp_iter = (getiterfunc)em_list_iter;
     type->tp_methods = methods;
     type->tp_members = members;
     type->tp_init = (initproc)em_list_init;
@@ -607,6 +692,13 @@ void register_em_list_object(PyObject *module)
     {
         Py_INCREF(&type);
         PyModule_AddObject(module, "EMList", (PyObject *)&type);
+    }
+
+    initialize_em_list_iter_type(&em_list_iter_type);
+    if(PyType_Ready(&em_list_iter_type) == 0)
+    {
+        Py_INCREF(&em_list_iter_type);
+        PyModule_AddObject(module, "_EMListIter", (PyObject *)&em_list_iter_type);
     }
 };
 

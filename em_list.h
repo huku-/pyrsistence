@@ -1,6 +1,9 @@
 #ifndef _EM_LIST_H_
 #define _EM_LIST_H_
 
+#include "includes.h"
+#include "mapped_file.h"
+
 
 /* In-file header; "index.bin" begins with this structure. */
 typedef struct em_list_index_hdr
@@ -33,6 +36,16 @@ typedef struct em_list
     mapped_file_t *values;      /* Memory mapped file for values */
     char is_open;               /* Non-zero if list is open */
 } em_list_t;
+
+
+/* Represents a Python `_EMListIter' object. */
+typedef struct em_list_iter
+{
+    PyObject_HEAD
+    em_list_t *em_list;         /* `EMList' object this iterator refers to */
+    size_t pos;                 /* Current iterator position */
+    size_t maxpos;              /* Maximum iterator position */
+} em_list_iter_t;
 
 
 void register_em_list_object(PyObject *);

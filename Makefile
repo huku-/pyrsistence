@@ -1,4 +1,5 @@
-TESTS=em_dict_basic em_dict_check em_dict_iter em_list_basic em_list_check
+TESTS=em_dict_basic em_dict_check em_dict_iter \
+	em_list_basic em_list_check em_list_iter
 OBJS=util.o marshaller.o rbtree.o mapped_file.o em_dict.o em_list.o pyrsistence.o
 BIN=pyrsistence.so
 
@@ -8,7 +9,7 @@ PYTHON_LIBS=$(shell python2.7-config --libs)
 # D=-D DEBUG -ggdb
 D=
 CFLAGS=-Wall -Wno-unused-result -Wno-strict-aliasing -O2 $(PYTHON_INCLUDES) \
-    -fPIC $(D)
+	-fPIC $(D)
 LDFLAGS=$(PYTHON_LIBS) -shared
 
 all: $(OBJS)

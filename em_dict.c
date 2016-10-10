@@ -729,16 +729,20 @@ static PyObject *em_dict_iterator_new(em_dict_t *self, char type)
 {
     em_dict_iter_t *iter;
 
-    iter = PyObject_New(em_dict_iter_t, &em_dict_iter_type);
+    if((iter = PyObject_New(em_dict_iter_t, &em_dict_iter_type)) != NULL)
+    {
+        PyObject_Init((PyObject *)iter, &em_dict_iter_type);
+        Py_INCREF(self);
 
-    PyObject_Init((PyObject *)iter, &em_dict_iter_type);
-    Py_INCREF(self);
+        /* XXX: Maybe initialize `max_pos' to index file's `used' member? */
+        iter->em_dict = self;
+        iter->pos = 0;
+        iter->max_pos = ((em_dict_index_hdr_t *)self->index)->mask + 1;
+        iter->type = type;
+    }
+    else
+        PyErr_SetString(PyExc_RuntimeError, "Failed to initialize iterator");
 
-    /* XXX: Maybe initialize `max_pos' to index file's `used' member? */
-    iter->em_dict = self;
-    iter->pos = 0;
-    iter->max_pos = ((em_dict_index_hdr_t *)self->index)->mask + 1;
-    iter->type = type;
     return (PyObject *)iter;
 }
 

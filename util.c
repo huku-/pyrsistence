@@ -33,7 +33,7 @@ void serror(const char *prefix)
     char buf[BUFSIZ];
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(),
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, BUFSIZ, NULL);
-    fprintf(stderr, "%s: %s\n", prefix, buf);
+    fprintf(stderr, "%s: %s", prefix, buf);
 #else
     perror(prefix);
 #endif

@@ -1,3 +1,9 @@
+2016-11-17 huku <huku@grhack.net>
+
+    * Fixed bug in `EMList' iterators (spotted by vats@census.gr).
+    * Updated precompiled binaries.
+
+
 2016-10-10 huku <huku@grhack.net>
 
     * Implemented iterator for class `EMList'.

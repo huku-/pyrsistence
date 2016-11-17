@@ -411,7 +411,7 @@ static PyObject *em_list_iter(em_list_t *self)
 
         iter->em_list = self;
         iter->pos = 0;
-        iter->maxpos = index->capacity;
+        iter->maxpos = index->used;
     }
     else
         PyErr_SetString(PyExc_RuntimeError, "Failed to initialize iterator");

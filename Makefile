@@ -4,7 +4,7 @@ OBJS=util.o marshaller.o rbtree.o mapped_file.o em_dict.o em_list.o pyrsistence.
 BIN=pyrsistence.so
 
 PYTHON_INCLUDES=$(shell python2.7-config --includes)
-PYTHON_LIBS=$(shell python2.7-config --libs)
+PYTHON_LIBS=$(shell python2.7-config --ldflags)
 
 # D=-D DEBUG -ggdb
 D=

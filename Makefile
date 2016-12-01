@@ -8,9 +8,9 @@ PYTHON_LIBS=$(shell python2.7-config --ldflags)
 
 # D=-D DEBUG -ggdb
 D=
-CFLAGS += -Wall -Wno-unused-result -Wno-strict-aliasing -O2 $(PYTHON_INCLUDES) \
+CFLAGS+=-Wall -Wno-unused-result -Wno-strict-aliasing -O2 $(PYTHON_INCLUDES) \
 	-fPIC $(D)
-LDFLAGS += $(PYTHON_LIBS) -shared
+LDFLAGS+=$(PYTHON_LIBS) -shared
 
 all: $(OBJS)
 	$(CC) $(OBJS) -o $(BIN) $(LDFLAGS)

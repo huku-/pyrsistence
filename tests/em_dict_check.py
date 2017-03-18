@@ -24,7 +24,7 @@ def main(argv):
 
     d = {}
     em_dict = pyrsistence.EMDict(dirname)
-    for i in xrange(0x1000000):
+    for i in util.xrange(0x1000000):
         v = random.randrange(0x1000000)
         em_dict[i] = v
         d[i] = v
@@ -34,7 +34,7 @@ def main(argv):
 
     util.msg('Verifying external memory dictionary contents')
 
-    for i in xrange(0x1000000):
+    for i in util.xrange(0x1000000):
         if em_dict[i] != d[i]:
             util.msg('FATAL! Mismatch in element %d: Got %#x but expected %#x' % (i, em_dict[i], d[i]))
 

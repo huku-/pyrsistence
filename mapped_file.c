@@ -316,8 +316,13 @@ static ssize_t mapped_file_marshal_string_object(mapped_file_t *mf,
     char *data;
     ssize_t pos, ret = -1;
 
+#if PY_MAJOR_VERSION >= 3
+    if(PyBytes_AsStringAndSize(obj, &data, &size) == -1)
+        goto _err;
+#else
     if(PyString_AsStringAndSize(obj, &data, &size) == -1)
         goto _err;
+#endif
 
     if((pos = mapped_file_allocate_chunk(mf, (size_t)size)) < 0)
         goto _err;
@@ -397,8 +402,13 @@ PyObject *mapped_file_unmarshal_object(mapped_file_t *mf, size_t pos)
     if((size = mapped_file_get_chunk_size(mf, pos)) < 0)
         goto _err;
 
+#if PY_MAJOR_VERSION >= 3
+    if((str = PyBytes_FromStringAndSize((char *)mf->address + pos, size)) == NULL)
+        goto _err;
+#else
     if((str = PyString_FromStringAndSize((char *)mf->address + pos, size)) == NULL)
         goto _err;
+#endif
 
     ret = unmarshal(str);
     Py_DECREF(str);

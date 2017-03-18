@@ -23,7 +23,7 @@ def main():
     dirname = util.make_temp_name('em_dict')
 
     em_dict = pyrsistence.EMDict(dirname)
-    for i in xrange(random.randrange(0x1000)):
+    for i in util.xrange(random.randrange(0x1000)):
         k = random.randrange(0x100000)
         v = random.randrange(0x100000)
         em_dict[k] = v
@@ -34,17 +34,17 @@ def main():
 
     # Request several iterator objects to locate possible memory leaks.
     util.msg('Testing item iterator')
-    for i in xrange(0x1000):
+    for i in util.xrange(0x1000):
         for item in em_dict.items():
             pass
 
     util.msg('Testing keys iterator')
-    for i in xrange(0x1000):
+    for i in util.xrange(0x1000):
         for key in em_dict.keys():
             pass
 
     util.msg('Testing values iterator')
-    for i in xrange(0x1000):
+    for i in util.xrange(0x1000):
         for value in em_dict.values():
             pass
 

@@ -108,20 +108,27 @@ _err:
 }
 
 
-/* Retrieve item from external memory list. */
+/* Retrieve item from external memory list.
+ *
+ * XXX: Support slice objects and negative indices?
+ */
 static PyObject *em_list_getitem(em_list_t *self, PyObject *key)
 {
     Py_ssize_t index;
 
     PyObject *r = NULL;
 
-    /* XXX: Support slice objects and negative indices? */
+    /* Python 3 supports only long integers. */
+#if PY_MAJOR_VERSION < 3
     if(PyInt_CheckExact(key))
     {
         index = PyInt_AsSsize_t(key);
         r = em_list_getitem_internal(self, index);
     }
     else if(PyLong_CheckExact(key))
+#else
+    if(PyLong_CheckExact(key))
+#endif
     {
         index = PyLong_AsSsize_t(key);
         r = em_list_getitem_internal(self, index);
@@ -196,20 +203,27 @@ _err:
 }
 
 
-/* Insert item in external memory list. */
+/* Insert item in external memory list.
+ *
+ * XXX: Support slice objects and negative indices?
+ */
 static int em_list_setitem(em_list_t *self, PyObject *key, PyObject *value)
 {
     Py_ssize_t index;
 
     int ret = -1;
 
-    /* XXX: Support slice objects and negative indices? */
+    /* Python 3 supports only long integers. */
+#if PY_MAJOR_VERSION < 3
     if(PyInt_CheckExact(key))
     {
         index = PyInt_AsSsize_t(key);
         ret = em_list_setitem_safe(self, index, value);
     }
     else if(PyLong_CheckExact(key))
+#else
+    if(PyLong_CheckExact(key))
+#endif
     {
         index = PyLong_AsSsize_t(key);
         ret = em_list_setitem_safe(self, index, value);
@@ -374,22 +388,26 @@ static void em_list_iter_dealloc(em_list_iter_t *self)
     PyObject_Del(self);
 }
 
+static PyTypeObject em_list_iter_type_base =
+{
+    PyVarObject_HEAD_INIT(NULL, 0)
+};
 
 static PyTypeObject em_list_iter_type;
 
 
+/* Initialization of `pyrsistence._EMListIter' type should go here. */
 static void initialize_em_list_iter_type(PyTypeObject *type)
 {
-    PyObject type_base =
-    {
-        PyObject_HEAD_INIT(NULL)
-    };
-
-    *(PyObject *)type = type_base;
+    *type = em_list_iter_type_base;
     type->tp_name = "pyrsistence._EMListIter";
     type->tp_basicsize = sizeof(em_list_iter_t);
     type->tp_dealloc = (destructor)em_list_iter_dealloc;
+#if PY_MAJOR_VERSION >= 3
+    type->tp_flags = Py_TPFLAGS_DEFAULT;
+#else
     type->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER;
+#endif
     type->tp_doc = "Internal EMList iterator object.";
     type->tp_iter = (getiterfunc)em_list_iter_iter;
     type->tp_iternext = (iternextfunc)em_list_iter_iternext;
@@ -658,19 +676,18 @@ static PyMemberDef members[] =
     {NULL, 0, 0, 0, NULL}
 };
 
-static PyObject type_base =
+static PyTypeObject em_list_type_base =
 {
-    PyObject_HEAD_INIT(NULL)
+    PyVarObject_HEAD_INIT(NULL, 0)
 };
 
-static PyTypeObject type;
-
+static PyTypeObject em_list_type;
 
 
 /* Initialization of `pyrsistence.EMList' type should go here. */
 static void initialize_em_list_type(PyTypeObject *type)
 {
-    *(PyObject *)type = type_base;
+    *type = em_list_type_base;
     type->tp_name = "pyrsistence.EMList";
     type->tp_basicsize = sizeof(em_list_t);
     type->tp_dealloc = (destructor)em_list_dealloc;
@@ -687,11 +704,11 @@ static void initialize_em_list_type(PyTypeObject *type)
 
 void register_em_list_object(PyObject *module)
 {
-    initialize_em_list_type(&type);
-    if(PyType_Ready(&type) == 0)
+    initialize_em_list_type(&em_list_type);
+    if(PyType_Ready(&em_list_type) == 0)
     {
-        Py_INCREF(&type);
-        PyModule_AddObject(module, "EMList", (PyObject *)&type);
+        Py_INCREF(&em_list_type);
+        PyModule_AddObject(module, "EMList", (PyObject *)&em_list_type);
     }
 
     initialize_em_list_iter_type(&em_list_iter_type);

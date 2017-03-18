@@ -31,13 +31,14 @@ For more information on EMDs have a look at the references.
 ## Compiling pyrsistence
 
 The code should compile without errors or warnings on all supported platforms.
+Both Python 2.7.x and Python 3.x are supported.
 
 
 ### Microsoft Windows
 
-Set **PYTHON_PREFIX** in **Makefile.nmake** to the directory where you have
-installed Python and then run the following command to build a 32-bit version
-of **pyrsistence**.
+Set `PYTHON_PREFIX` in **Makefile.nmake** to the directory where you have
+installed Python 2.7.x or 3.x and then run the following command to build a
+32-bit version of **pyrsistence**.
 
 ```
 Z:\pyrsistence>"C:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\vcvarsall.bat"
@@ -51,8 +52,8 @@ Z:\pyrsistence>"C:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\vcvarsall
 Z:\pyrsistence>nmake /F Makefile.nmake
 ```
 
-In newer versions of Visual Studio you might need to replace the **amd64**
-argument with **x86_amd64**.
+Depending on your Visual Studio version, you might need to replace the **amd64**
+argument with **x86\_amd64**.
 
 To install **pyrsistence** issue the following command:
 
@@ -62,12 +63,18 @@ Z:\pyrsistence>nmake /F Makefile.nmake install
 
 ### MacOS X
 
-Just enter the top-level directory and run **make** and **make install**.
+Set `PYTHON_VERSION` in **Makefile** to the version of Python you would like to
+use, or leave it blank to use system's default.
+
+Then, run **make** and **make install**.
 
 
 ### Linux
 
-Just enter the top-level directory and run **make** and **make install**.
+Set `PYTHON_VERSION` in **Makefile** to the version of Python you would like to
+use, or leave it blank to use system's default.
+
+Then, run **make** and **make install**.
 
 
 ## Precompiled binaries
@@ -86,6 +93,17 @@ Below is a list of experimental, precompiled binaries for all supported platform
 
 For more information on **pyrsistence**, have a look at the
 [wiki](https://github.com/huku-/pyrsistence/wiki).
+
+
+## Contributors
+
+Special thanks to the following people for contributing to **pyrsistence**:
+
+  * [argp](https://github.com/argp), [vats](https://github.com/vats-) and
+    [anestisb](https://github.com/anestisb) for using, testing, reporting and
+    fixing bugs.
+
+  * [adc](https://github.com/adc) for Python 3.x support. 
 
 
 ## References

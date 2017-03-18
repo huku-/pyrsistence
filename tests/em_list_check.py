@@ -24,7 +24,7 @@ def main(argv):
 
     l = []
     em_list = pyrsistence.EMList(dirname)
-    for i in xrange(0x1000000):
+    for i in util.xrange(0x1000000):
         v = random.randrange(0x1000000)
         em_list.append(v)
         l.append(v)
@@ -34,7 +34,7 @@ def main(argv):
 
     util.msg('Verifying external memory list contents')
 
-    for i in xrange(0x1000000):
+    for i in util.xrange(0x1000000):
         if em_list[i] != l[i]:
             util.msg('FATAL! Mismatch in element %d: Got %#x but expected %#x' % (i, em_list[i], l[i]))
 

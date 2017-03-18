@@ -23,7 +23,7 @@ def main(argv):
     dirname = util.make_temp_name('em_list')
 
     em_list = pyrsistence.EMList(dirname)
-    for i in xrange(0x1000):
+    for i in util.xrange(0x1000):
         em_list.append(random.randrange(0x100000))
 
     t2 = time.time()
@@ -32,7 +32,7 @@ def main(argv):
 
     # Request several iterator objects to locate possible memory leaks.
     util.msg('Testing iterator')
-    for i in xrange(0x1000):
+    for i in util.xrange(0x1000):
         for item in em_list:
             pass
 

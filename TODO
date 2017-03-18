@@ -7,5 +7,4 @@
       better.
     * Replace red-black tree with per-size free-lists a-la TCMalloc.
     * Replace `mapped_file_get_eof()' with `mapped_file_seek(..., 0, SEEK_END)'?
-    * Hybrid main/external memory model?
 

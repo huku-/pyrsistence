@@ -23,7 +23,7 @@ def main(argv):
     dirname = util.make_temp_name('em_list')
 
     em_list = pyrsistence.EMList(dirname)
-    for i in xrange(0x1000000):
+    for i in util.xrange(0x1000000):
         em_list.append(i)
 
     t2 = time.time()

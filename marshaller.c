@@ -26,11 +26,16 @@ int marshaller_init(void)
     int ret = -1;
 
     /* Experienced developers may use other modules or even implement their own
-     * marshalling and unmarshalling techniques. For now, use "cPickle", it's
-     * more than enough.
+     * marshalling and unmarshalling techniques. For now, use "cPickle", on
+     * Python 2.7.x, and "_pickle" on Python 3.x.
      */
+#if PY_MAJOR_VERSION >= 3
+    if((module = PyImport_ImportModuleNoBlock("_pickle")) == NULL)
+        goto _err;
+#else
     if((module = PyImport_ImportModuleNoBlock("cPickle")) == NULL)
         goto _err;
+#endif
 
     dict = PyModule_GetDict(module);
 
@@ -43,12 +48,18 @@ int marshaller_init(void)
     if((unmarshal_method = PyDict_GetItemString(dict, "loads")) == NULL)
     {
         Py_DECREF(module);
+        Py_DECREF(marshal_method);
         goto _err;
     }
 
-    if((proto = PyDict_GetItemString(dict, "HIGHEST_PROTOCOL")) == NULL)
+    /* According to Python 2.7.x & 3.x documentation, specifying a negative
+     * protocol version is equivalent to choosing the highest protocol.
+     */
+    if((proto = PyLong_FromLong(-1)) == NULL)
     {
         Py_DECREF(module);
+        Py_DECREF(marshal_method);
+        Py_DECREF(unmarshal_method);
         goto _err;
     }
 
@@ -89,9 +100,9 @@ PyObject *unmarshal(PyObject *obj)
 
 void marshaller_fini(void)
 {
+    Py_DECREF(proto);
     Py_DECREF(marshal_method);
     Py_DECREF(unmarshal_method);
-    Py_DECREF(proto);
     Py_DECREF(module);
 }
 

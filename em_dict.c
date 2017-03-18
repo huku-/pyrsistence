@@ -157,6 +157,10 @@ static void em_dict_iter_dealloc(em_dict_iter_t *self)
     PyObject_Del(self);
 }
 
+static PyTypeObject em_dict_iter_type_base =
+{
+    PyVarObject_HEAD_INIT(NULL, 0)
+};
 
 static PyTypeObject em_dict_iter_type;
 
@@ -164,16 +168,15 @@ static PyTypeObject em_dict_iter_type;
 /* Initialization of `pyrsistence._EMDictIter' type should go here. */
 static void initialize_em_dict_iter_type(PyTypeObject *type)
 {
-    PyObject type_base =
-    {
-        PyObject_HEAD_INIT(NULL)
-    };
-
-    *(PyObject *)type = type_base;
+    *type = em_dict_iter_type_base;
     type->tp_name = "pyrsistence._EMDictIter";
     type->tp_basicsize = sizeof(em_dict_iter_t);
     type->tp_dealloc = (destructor)em_dict_iter_dealloc;
+#if PY_MAJOR_VERSION >= 3
+    type->tp_flags = Py_TPFLAGS_DEFAULT;
+#else
     type->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER;
+#endif
     type->tp_doc = "Internal EMDict iterator object.";
     type->tp_iter = (getiterfunc)em_dict_iter_iter;
     type->tp_iternext = (iternextfunc)em_dict_iter_iternext;
@@ -832,18 +835,18 @@ static PyMemberDef em_dict_members[] =
     {NULL, 0, 0, 0, NULL}
 };
 
+static PyTypeObject em_dict_type_base =
+{
+    PyVarObject_HEAD_INIT(NULL, 0)
+};
+
 static PyTypeObject em_dict_type;
 
 
 /* Initialization of `pyrsistence.EMDict' type should go here. */
 static void initialize_em_dict_type(PyTypeObject *type)
 {
-    PyObject type_base =
-    {
-        PyObject_HEAD_INIT(NULL)
-    };
-
-    *(PyObject *)type = type_base;
+    *type = em_dict_type_base;
     type->tp_name = "pyrsistence.EMDict";
     type->tp_basicsize = sizeof(em_dict_t);
     type->tp_dealloc = (destructor)em_dict_dealloc;

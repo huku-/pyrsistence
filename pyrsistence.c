@@ -9,19 +9,44 @@
 #include "em_dict.h"
 #include "em_list.h"
 
-static PyMethodDef methods[] =
-{
-    M_NULL
-};
 
+#if PY_MAJOR_VERSION >= 3
+static PyModuleDef pyrsistence_module =
+{
+    PyModuleDef_HEAD_INIT,
+    "pyrsistence",
+    NULL,
+    -1,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+#endif
+
+
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_pyrsistence(void)
+#else
 PyMODINIT_FUNC initpyrsistence(void)
+#endif
 {
     PyObject *module;
 
-    module = Py_InitModule("pyrsistence", methods);
+#if PY_MAJOR_VERSION >= 3
+    module = PyModule_Create(&pyrsistence_module);
+#else
+    module = Py_InitModule("pyrsistence", NULL);
+#endif
+
     register_em_dict_object(module);
     register_em_list_object(module);
 
     marshaller_init();
+
+#if PY_MAJOR_VERSION >= 3
+    return module;
+#endif
 }
 

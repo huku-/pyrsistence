@@ -100,8 +100,13 @@ void rm_dir(const char *dirname)
 /* Compare Python objects `obj1' and `obj2' and return true if equal. */
 int equal_objects(PyObject *obj1, PyObject *obj2)
 {
+#if PY_MAJOR_VERSION >= 3
+    return (obj1 != NULL && obj2 != NULL &&
+        PyObject_RichCompareBool(obj1, obj2, Py_EQ) == 1);
+#else
     int result;
     return (obj1 != NULL && obj2 != NULL &&
         PyObject_Cmp(obj1, obj2, &result) != -1 && result == 0);
+#endif
 }
 

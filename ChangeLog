@@ -1,3 +1,11 @@
+2017-03-18 huku <huku@grhack.net>
+
+    * Added support for Python 3.x (patch by @adc).
+    * Fixed compiler warnings and minor problems with type object initialization.
+    * Removed `HIGHEST_PROTOCOL' dependency in "marshaller.c".
+    * Removed unused `PyMethodDef' from "pyrsistence.c".
+
+
 2016-11-17 huku <huku@grhack.net>
 
     * Fixed bug in `EMList' iterators (spotted by vats@census.gr).

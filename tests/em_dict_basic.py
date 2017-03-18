@@ -23,7 +23,7 @@ def main(argv):
     dirname = util.make_temp_name('em_dict')
 
     em_dict = pyrsistence.EMDict(dirname)
-    for i in xrange(0x1000000):
+    for i in util.xrange(0x1000000):
         em_dict[i] = i
 
     t2 = time.time()

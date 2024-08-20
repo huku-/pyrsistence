@@ -11,7 +11,12 @@
 #endif
 
 
+#ifdef DEBUG
 void msgf(const char *, ...);
+#else
+#define msgf(fmt...)
+#endif /* DEBUG */
+
 void serror(const char *);
 char *path_combine(const char *, const char *);
 int mk_dir(const char *);
@@ -19,4 +24,3 @@ void rm_dir(const char *);
 int equal_objects(PyObject *, PyObject *);
 
 #endif /* _UTIL_H_ */
-

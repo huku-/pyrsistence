@@ -7,10 +7,10 @@
 #include "util.h"
 
 
+#ifdef DEBUG
 /* Prints a debugging message if `DEBUG' is defined. */
 void msgf(const char *fmt, ...)
 {
-#ifdef DEBUG
     char ftime[BUFSIZ], new_fmt[BUFSIZ];
     time_t now;
     va_list va;
@@ -22,8 +22,8 @@ void msgf(const char *fmt, ...)
     va_start(va, fmt);
     vfprintf(stderr, new_fmt, va);
     va_end(va);
-#endif
 }
+#endif
 
 
 /* A version of `perror()' that works on Microsoft Windows and Unixoids too. */
@@ -109,4 +109,3 @@ int equal_objects(PyObject *obj1, PyObject *obj2)
         PyObject_Cmp(obj1, obj2, &result) != -1 && result == 0);
 #endif
 }
-

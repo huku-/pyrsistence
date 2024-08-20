@@ -388,31 +388,21 @@ static void em_list_iter_dealloc(em_list_iter_t *self)
     PyObject_Del(self);
 }
 
-static PyTypeObject em_list_iter_type_base =
+static PyTypeObject em_list_iter_type =
 {
     PyVarObject_HEAD_INIT(NULL, 0)
-};
-
-static PyTypeObject em_list_iter_type;
-
-
-/* Initialization of `pyrsistence._EMListIter' type should go here. */
-static void initialize_em_list_iter_type(PyTypeObject *type)
-{
-    *type = em_list_iter_type_base;
-    type->tp_name = "pyrsistence._EMListIter";
-    type->tp_basicsize = sizeof(em_list_iter_t);
-    type->tp_dealloc = (destructor)em_list_iter_dealloc;
+    .tp_name = "pyrsistence._EMListIter",
+    .tp_basicsize = sizeof(em_list_iter_t),
+    .tp_dealloc = (destructor)em_list_iter_dealloc,
 #if PY_MAJOR_VERSION >= 3
-    type->tp_flags = Py_TPFLAGS_DEFAULT;
+    .tp_flags = Py_TPFLAGS_DEFAULT,
 #else
-    type->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER;
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER,
 #endif
-    type->tp_doc = "Internal EMList iterator object.";
-    type->tp_iter = (getiterfunc)em_list_iter_iter;
-    type->tp_iternext = (iternextfunc)em_list_iter_iternext;
-}
-
+    .tp_doc = "Internal EMList iterator object.",
+    .tp_iter = (getiterfunc)em_list_iter_iter,
+    .tp_iternext = (iternextfunc)em_list_iter_iternext,
+};
 
 
 /* This is the `tp_iter()' method of `EMList' object. */
@@ -600,7 +590,7 @@ _err:
 
 
 /* Synchronize and close an external memory list. */
-static PyObject *em_list_close(em_list_t *self)
+static PyObject *em_list_close(em_list_t *self, PyObject *Py_UNUSED(args))
 {
     mapped_file_t *index = self->index;
     mapped_file_t *values = self->values;
@@ -626,7 +616,7 @@ static PyObject *em_list_close(em_list_t *self)
 
 
 /* Called via `tp_init()'. */
-static int em_list_init(em_list_t *self, PyObject *args, PyObject *kwargs)
+static int em_list_init(em_list_t *self, PyObject *args, PyObject *Py_UNUSED(kwargs))
 {
     int ret = -1;
 
@@ -649,7 +639,7 @@ _err:
 /* Called via `tp_dealloc()'. */
 static void em_list_dealloc(em_list_t *self)
 {
-    PyObject *r = em_list_close(self);
+    PyObject *r = em_list_close(self, NULL);
     Py_DECREF(r);
     PyObject_Del(self);
 }
@@ -676,46 +666,34 @@ static PyMemberDef members[] =
     {NULL, 0, 0, 0, NULL}
 };
 
-static PyTypeObject em_list_type_base =
+static PyTypeObject em_list_type =
 {
     PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "pyrsistence.EMList",
+    .tp_basicsize = sizeof(em_list_t),
+    .tp_dealloc = (destructor)em_list_dealloc,
+    .tp_as_mapping = &mapping_proto,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_doc = "External memory list implementation.",
+    .tp_iter = (getiterfunc)em_list_iter,
+    .tp_methods = methods,
+    .tp_members = members,
+    .tp_init = (initproc)em_list_init,
+    .tp_new = PyType_GenericNew
 };
-
-static PyTypeObject em_list_type;
-
-
-/* Initialization of `pyrsistence.EMList' type should go here. */
-static void initialize_em_list_type(PyTypeObject *type)
-{
-    *type = em_list_type_base;
-    type->tp_name = "pyrsistence.EMList";
-    type->tp_basicsize = sizeof(em_list_t);
-    type->tp_dealloc = (destructor)em_list_dealloc;
-    type->tp_as_mapping = &mapping_proto;
-    type->tp_flags = Py_TPFLAGS_DEFAULT;
-    type->tp_doc = "External memory list implementation.";
-    type->tp_iter = (getiterfunc)em_list_iter;
-    type->tp_methods = methods;
-    type->tp_members = members;
-    type->tp_init = (initproc)em_list_init;
-    type->tp_new = PyType_GenericNew;
-}
 
 
 void register_em_list_object(PyObject *module)
 {
-    initialize_em_list_type(&em_list_type);
     if(PyType_Ready(&em_list_type) == 0)
     {
         Py_INCREF(&em_list_type);
         PyModule_AddObject(module, "EMList", (PyObject *)&em_list_type);
     }
 
-    initialize_em_list_iter_type(&em_list_iter_type);
     if(PyType_Ready(&em_list_iter_type) == 0)
     {
         Py_INCREF(&em_list_iter_type);
         PyModule_AddObject(module, "_EMListIter", (PyObject *)&em_list_iter_type);
     }
 };
-

@@ -327,7 +327,7 @@ static ssize_t mapped_file_marshal_string_object(mapped_file_t *mf,
     if((pos = mapped_file_allocate_chunk(mf, (size_t)size)) < 0)
         goto _err;
 
-    if(pos != mapped_file_tell(mf) &&
+    if((size_t)pos != mapped_file_tell(mf) &&
             mapped_file_seek(mf, pos, SEEK_SET) != 0)
     {
         mapped_file_free_chunk(mf, pos);
@@ -726,13 +726,17 @@ static void *map_file(int fd, size_t size)
 
     if(address == MAP_FAILED)
     {
+        /* Make sure we return `NULL' instead of `MAP_FAILED'. */
+        address = NULL;
+
+        serror("map_file: mmap");
+
         /* Restore original file size on failure to avoid undefined behaviour
          * when accessing a memory mapped region for a file that has, for
          * example, been shrunk by `ftruncate()'.
          */
-        ftruncate(fd, st.st_size);
-        serror("map_file: mmap");
-        goto _err;
+        if(ftruncate(fd, st.st_size) != 0)
+            serror("map_file: ftruncate");
     }
 
 _err:
@@ -951,7 +955,8 @@ _ok:
     return 0;
 
 _err2:
-    ftruncate(mf_fd, mf_size);
+    if(ftruncate(mf_fd, mf_size) != 0)
+        serror("mapped_file_truncate: ftruncate");
 
 _err1:
     return -1;
@@ -1005,4 +1010,3 @@ void mapped_file_close(mapped_file_t *mf)
 }
 
 #endif /* _WIN32 */
-

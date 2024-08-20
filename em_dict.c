@@ -157,30 +157,21 @@ static void em_dict_iter_dealloc(em_dict_iter_t *self)
     PyObject_Del(self);
 }
 
-static PyTypeObject em_dict_iter_type_base =
+static PyTypeObject em_dict_iter_type =
 {
     PyVarObject_HEAD_INIT(NULL, 0)
-};
-
-static PyTypeObject em_dict_iter_type;
-
-
-/* Initialization of `pyrsistence._EMDictIter' type should go here. */
-static void initialize_em_dict_iter_type(PyTypeObject *type)
-{
-    *type = em_dict_iter_type_base;
-    type->tp_name = "pyrsistence._EMDictIter";
-    type->tp_basicsize = sizeof(em_dict_iter_t);
-    type->tp_dealloc = (destructor)em_dict_iter_dealloc;
+    .tp_name = "pyrsistence._EMDictIter",
+    .tp_basicsize = sizeof(em_dict_iter_t),
+    .tp_dealloc = (destructor)em_dict_iter_dealloc,
 #if PY_MAJOR_VERSION >= 3
-    type->tp_flags = Py_TPFLAGS_DEFAULT;
+    .tp_flags = Py_TPFLAGS_DEFAULT,
 #else
-    type->tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER;
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER,
 #endif
-    type->tp_doc = "Internal EMDict iterator object.";
-    type->tp_iter = (getiterfunc)em_dict_iter_iter;
-    type->tp_iternext = (iternextfunc)em_dict_iter_iternext;
-}
+    .tp_doc = "Internal EMDict iterator object.",
+    .tp_iter = (getiterfunc)em_dict_iter_iter,
+    .tp_iternext = (iternextfunc)em_dict_iter_iternext
+};
 
 
 
@@ -694,7 +685,7 @@ _err:
 
 
 /* Synchronize and close an external memory dictionary. */
-static PyObject *em_dict_close(em_dict_t *self)
+static PyObject *em_dict_close(em_dict_t *self, PyObject *Py_UNUSED(args))
 {
     mapped_file_t *index = self->index;
     mapped_file_t *keys = self->keys;
@@ -750,19 +741,19 @@ static PyObject *em_dict_iterator_new(em_dict_t *self, char type)
 }
 
 /* Get an iterator for key-value tuples. */
-static PyObject *em_dict_items(em_dict_t *self)
+static PyObject *em_dict_items(em_dict_t *self, PyObject *Py_UNUSED(args))
 {
     return em_dict_iterator_new(self, EM_DICT_ITER_ITEMS);
 }
 
 /* Get an iterator for keys. */
-static PyObject *em_dict_keys(em_dict_t *self)
+static PyObject *em_dict_keys(em_dict_t *self, PyObject *Py_UNUSED(args))
 {
     return em_dict_iterator_new(self, EM_DICT_ITER_KEYS);
 }
 
 /* Get an iterator for values. */
-static PyObject *em_dict_values(em_dict_t *self)
+static PyObject *em_dict_values(em_dict_t *self, PyObject *Py_UNUSED(args))
 {
     return em_dict_iterator_new(self, EM_DICT_ITER_VALUES);
 }
@@ -770,7 +761,7 @@ static PyObject *em_dict_values(em_dict_t *self)
 
 
 /* Called via `tp_init()'. */
-static int em_dict_init(em_dict_t *self, PyObject *args, PyObject *kwargs)
+static int em_dict_init(em_dict_t *self, PyObject *args, PyObject *Py_UNUSED(kwargs))
 {
     int ret = -1;
 
@@ -793,7 +784,7 @@ _err:
 /* Called via `tp_dealloc()'. */
 static void em_dict_dealloc(em_dict_t *self)
 {
-    PyObject *r = em_dict_close(self);
+    PyObject *r = em_dict_close(self, NULL);
     Py_DECREF(r);
     PyObject_Del(self);
 }
@@ -835,46 +826,34 @@ static PyMemberDef em_dict_members[] =
     {NULL, 0, 0, 0, NULL}
 };
 
-static PyTypeObject em_dict_type_base =
+static PyTypeObject em_dict_type =
 {
     PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "pyrsistence.EMDict",
+    .tp_basicsize = sizeof(em_dict_t),
+    .tp_dealloc = (destructor)em_dict_dealloc,
+    .tp_as_sequence = &em_dict_sequence_proto,
+    .tp_as_mapping = &em_dict_mapping_proto,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_doc = "External memory dictionary implementation.",
+    .tp_methods = em_dict_methods,
+    .tp_members = em_dict_members,
+    .tp_init = (initproc)em_dict_init,
+    .tp_new = PyType_GenericNew
 };
-
-static PyTypeObject em_dict_type;
-
-
-/* Initialization of `pyrsistence.EMDict' type should go here. */
-static void initialize_em_dict_type(PyTypeObject *type)
-{
-    *type = em_dict_type_base;
-    type->tp_name = "pyrsistence.EMDict";
-    type->tp_basicsize = sizeof(em_dict_t);
-    type->tp_dealloc = (destructor)em_dict_dealloc;
-    type->tp_as_sequence = &em_dict_sequence_proto;
-    type->tp_as_mapping = &em_dict_mapping_proto;
-    type->tp_flags = Py_TPFLAGS_DEFAULT;
-    type->tp_doc = "External memory dictionary implementation.";
-    type->tp_methods = em_dict_methods;
-    type->tp_members = em_dict_members;
-    type->tp_init = (initproc)em_dict_init;
-    type->tp_new = PyType_GenericNew;
-}
 
 
 void register_em_dict_object(PyObject *module)
 {
-    initialize_em_dict_type(&em_dict_type);
     if(PyType_Ready(&em_dict_type) == 0)
     {
         Py_INCREF(&em_dict_type);
         PyModule_AddObject(module, "EMDict", (PyObject *)&em_dict_type);
     }
 
-    initialize_em_dict_iter_type(&em_dict_iter_type);
     if(PyType_Ready(&em_dict_iter_type) == 0)
     {
         Py_INCREF(&em_dict_iter_type);
         PyModule_AddObject(module, "_EMDictIter", (PyObject *)&em_dict_iter_type);
     }
 };
-

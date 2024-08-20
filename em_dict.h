@@ -71,4 +71,3 @@ typedef struct em_dict_iter
 void register_em_dict_object(PyObject *);
 
 #endif /* _EM_DICT_H_ */
-

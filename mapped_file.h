@@ -75,4 +75,3 @@ int mapped_file_unlink(mapped_file_t *);
 void mapped_file_close(mapped_file_t *);
 
 #endif /* _MAPPED_FILE_H_ */
-

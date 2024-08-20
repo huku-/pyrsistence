@@ -37,4 +37,3 @@ void *rbtree_delete_node(rbtree_t *, rbnode_t *);
 void rbtree_free(rbtree_t *);
 
 #endif /* _RBTREE_H */
-

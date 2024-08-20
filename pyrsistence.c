@@ -49,4 +49,3 @@ PyMODINIT_FUNC initpyrsistence(void)
     return module;
 #endif
 }
-

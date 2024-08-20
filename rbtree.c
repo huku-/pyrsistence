@@ -425,4 +425,3 @@ void rbtree_free(rbtree_t *tree)
     rbtree_free_node(tree, RBTREE_FIRST(tree));
     PyMem_FREE(tree);
 }
-

@@ -105,4 +105,3 @@ void marshaller_fini(void)
     Py_DECREF(unmarshal_method);
     Py_DECREF(module);
 }
-

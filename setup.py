@@ -15,10 +15,6 @@ CFLAGS = [
     "-ggdb",
     "-Wall",
     "-Wextra",
-    "-Wno-unused-result",
-    "-Wno-unused-parameter",
-    "-Wno-strict-aliasing",
-    "-Wno-cast-function-type",
     "-O2",
     "-fPIC",
     # "-DDEBUG"

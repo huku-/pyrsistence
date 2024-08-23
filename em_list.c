@@ -75,7 +75,6 @@ static PyObject *em_list_getitem_internal(em_list_t *self, Py_ssize_t index)
     em_list_index_hdr_t *index_hdr;
     em_list_index_ent_t ent;
     size_t value_pos;
-
     PyObject *r = NULL;
 
     index_hdr = self->index->address;
@@ -94,7 +93,7 @@ static PyObject *em_list_getitem_internal(em_list_t *self, Py_ssize_t index)
     value_pos = ent.value_pos;
     if(value_pos != 0)
     {
-        if((r = mapped_file_unmarshal_object(self->values, value_pos)) == NULL)
+        if((r = mapped_file_unmarshal_object(EM_COMMON(self), self->values, value_pos)) == NULL)
             PyErr_SetString(PyExc_RuntimeError, "Failed to unmarshal value object");
     }
     else
@@ -115,7 +114,6 @@ _err:
 static PyObject *em_list_getitem(em_list_t *self, PyObject *key)
 {
     Py_ssize_t index;
-
     PyObject *r = NULL;
 
     /* Python 3 supports only long integers. */
@@ -146,9 +144,7 @@ static int em_list_setitem_internal(em_list_t *self, Py_ssize_t index,
 {
     em_list_index_ent_t ent;
     ssize_t value_pos;
-
     int ret = -1;
-
 
     if(em_list_get_entry(self->index, &ent, (size_t)index) != 0)
     {
@@ -159,7 +155,7 @@ static int em_list_setitem_internal(em_list_t *self, Py_ssize_t index,
     if(ent.value_pos != 0)
         mapped_file_free_chunk(self->values, ent.value_pos);
 
-    if((value_pos = mapped_file_marshal_object(self->values, value)) < 0)
+    if((value_pos = mapped_file_marshal_object(EM_COMMON(self), self->values, value)) < 0)
     {
         PyErr_SetString(PyExc_RuntimeError, "Failed to marshal value object");
         goto _err;
@@ -183,7 +179,6 @@ _err:
 static int em_list_setitem_safe(em_list_t *self, Py_ssize_t index, PyObject *value)
 {
     em_list_index_hdr_t *index_hdr;
-
     int ret = -1;
 
     index_hdr = self->index->address;
@@ -210,7 +205,6 @@ _err:
 static int em_list_setitem(em_list_t *self, PyObject *key, PyObject *value)
 {
     Py_ssize_t index;
-
     int ret = -1;
 
     /* Python 3 supports only long integers. */
@@ -243,7 +237,6 @@ static int em_list_resize(em_list_t *self)
     mapped_file_t *mf;
     em_list_index_hdr_t *index_hdr, *new_index_hdr;
 
-
     /* Get a reference to the current index file header. */
     index_hdr = (em_list_index_hdr_t *)self->index->address;
 
@@ -262,7 +255,6 @@ static int em_list_resize(em_list_t *self)
         goto _err1;
     }
 
-
     msgf("EMList: Resizing");
 
     filename = path_combine(self->dirname, "index.bin.1");
@@ -273,7 +265,6 @@ static int em_list_resize(em_list_t *self)
     memcpy(mf->address, self->index->address, EM_LIST_E2S(capacity));
 
     msgf("EMList: Resize successful");
-
 
     filename = path_combine(self->dirname, "index.bin.0");
     if(mapped_file_rename(self->index, filename) != 0)
@@ -315,10 +306,7 @@ static PyObject *em_list_append(em_list_t *self, PyObject *args)
 {
     em_list_index_hdr_t *index;
     size_t used;
-    PyObject *value;
-
-    PyObject *r = NULL;
-
+    PyObject *value, *r = NULL;
 
     if(PyArg_ParseTuple(args, "O", &value) == 0)
         goto _err;
@@ -357,7 +345,6 @@ _err:
 /* Iterator's `__iter__()' method. */
 static PyObject *em_list_iter_iter(em_list_iter_t *self)
 {
-    Py_INCREF(self);
     return (PyObject *)self;
 }
 
@@ -367,7 +354,6 @@ static PyObject *em_list_iter_iternext(em_list_iter_t *self)
 {
     em_list_t *em_list = self->em_list;
     size_t pos = self->pos;
-
     PyObject *r = NULL;
 
     if(pos < self->maxpos)
@@ -408,9 +394,8 @@ static PyTypeObject em_list_iter_type =
 /* This is the `tp_iter()' method of `EMList' object. */
 static PyObject *em_list_iter(em_list_t *self)
 {
-    em_list_index_hdr_t *index = self->index->address;
-
     em_list_iter_t *iter;
+    em_list_index_hdr_t *index = self->index->address;
 
     if((iter = PyObject_New(em_list_iter_t, &em_list_iter_type)) != NULL)
     {
@@ -439,7 +424,6 @@ static int em_list_create(em_list_t *self)
     em_list_values_hdr_t values_hdr;
     size_t size;
     char *filename;
-
     const char *dirname = self->dirname;
 
     /* Compute initial external memory list index size. */
@@ -493,9 +477,7 @@ static int em_list_open_existing(em_list_t *self)
     em_list_values_hdr_t *values_hdr;
     size_t pos;
     char *filename;
-
     const char *dirname = self->dirname;
-
 
     /* Open and verify "index.bin". */
     filename = path_combine(dirname, "index.bin");
@@ -535,15 +517,30 @@ _err1:
 
 
 /* Called by `em_list_open()' and `em_list_init()'. */
-static int em_list_open_common(em_list_t *self, PyObject *args)
+static int em_list_open_common(em_list_t *self, PyObject *args, PyObject *kwargs)
 {
-    char *dirname;
+    PyObject *pickler = NULL, *unpickler = NULL;
+
+    char *dirname, *kwarr[] = {
+        "dirname",
+        "pickler",
+        "unpickler",
+        NULL
+    };
 
     int ret = -1;
 
-
-    if(PyArg_ParseTuple(args, "s", &dirname) == 0)
-        goto _err;
+    if(kwargs)
+    {
+        if(PyArg_ParseTupleAndKeywords(args, kwargs, "s|OO", kwarr, &dirname,
+                &pickler, &unpickler) == 0)
+            goto _err;
+    }
+    else
+    {
+        if(PyArg_ParseTuple(args, "s", &dirname) == 0)
+            goto _err;
+    }
 
     if((self->dirname = PyMem_MALLOC(strlen(dirname) + 1)) == NULL)
     {
@@ -552,6 +549,12 @@ static int em_list_open_common(em_list_t *self, PyObject *args)
     }
 
     strcpy(self->dirname, dirname);
+
+    if(pickler && valid_pickler(pickler, &self->pickle) == 0)
+        self->pickler = pickler;
+
+    if(unpickler && valid_unpickler(unpickler, &self->unpickle) == 0)
+        self->unpickler = unpickler;
 
     /* XXX: There's an obvious race condition here, should we care? */
     if(access(self->dirname, F_OK) == 0)
@@ -578,7 +581,7 @@ static PyObject *em_list_open(em_list_t *self, PyObject *args)
         goto _err;
     }
 
-    if(em_list_open_common(self, args) != 0)
+    if(em_list_open_common(self, args, NULL) != 0)
         goto _err;
 
     Py_INCREF(Py_True);
@@ -616,7 +619,7 @@ static PyObject *em_list_close(em_list_t *self, PyObject *Py_UNUSED(args))
 
 
 /* Called via `tp_init()'. */
-static int em_list_init(em_list_t *self, PyObject *args, PyObject *Py_UNUSED(kwargs))
+static int em_list_init(em_list_t *self, PyObject *args, PyObject *kwargs)
 {
     int ret = -1;
 
@@ -626,7 +629,7 @@ static int em_list_init(em_list_t *self, PyObject *args, PyObject *Py_UNUSED(kwa
         goto _err;
     }
 
-    if(em_list_open_common(self, args) != 0)
+    if(em_list_open_common(self, args, kwargs) != 0)
         goto _err;
 
     ret = 0;

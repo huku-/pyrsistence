@@ -22,5 +22,7 @@ char *path_combine(const char *, const char *);
 int mk_dir(const char *);
 void rm_dir(const char *);
 int equal_objects(PyObject *, PyObject *);
+int valid_pickler(PyObject *, PyObject **);
+int valid_unpickler(PyObject *, PyObject **);
 
 #endif /* _UTIL_H_ */

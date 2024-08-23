@@ -350,13 +350,14 @@ _err:
 /* Allocate a chunk of appropriate size from mapped file `mf' and marshal Python
  * object `obj' in it.
  */
-ssize_t mapped_file_marshal_object(mapped_file_t *mf, PyObject *obj)
+ssize_t mapped_file_marshal_object(em_common_t *em_obj, mapped_file_t *mf,
+        PyObject *obj)
 {
     PyObject *str;
 
     ssize_t pos = -1;
 
-    if((str = marshal(obj)) == NULL)
+    if((str = marshal(em_obj, obj)) == NULL)
         goto _err;
 
     pos = mapped_file_marshal_string_object(mf, str);
@@ -391,7 +392,8 @@ _err:
 
 
 /* Unmarshal a Python object from position `pos' in memory mapped file `mf'. */
-PyObject *mapped_file_unmarshal_object(mapped_file_t *mf, size_t pos)
+PyObject *mapped_file_unmarshal_object(em_common_t *em_obj, mapped_file_t *mf,
+        size_t pos)
 {
     ssize_t size;
     PyObject *str, *ret = NULL;
@@ -410,8 +412,8 @@ PyObject *mapped_file_unmarshal_object(mapped_file_t *mf, size_t pos)
         goto _err;
 #endif
 
-    ret = unmarshal(str);
-    Py_DECREF(str);
+    ret = unmarshal(em_obj, str);
+    /* Py_DECREF(str); */
 
 _err:
     return ret;

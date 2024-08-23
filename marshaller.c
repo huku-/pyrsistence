@@ -4,10 +4,12 @@
  * marshaller.c - Python object marshalling and unmarshalling API.
  *
  * This file exports two API functions, namely `marshal()' and `unmarshal()',
- * which can be used to serialize and unserialize python objects to and from
- * string objects accordingly. Experienced Python developers may implement their
- * own object serialization methodologies, but, for now, we just make use of the
- * optimized "cPickle" module.
+ * which can be used to serialize and deserialize python objects to and from
+ * string objects accordingly. The default behavior is to use "cPickle" on
+ * Python 2.x and "_pickle" on Python 3.x.
+ *
+ * However, the API allows for EM types to implement their own serialization and
+ * deserialization methods (see `em_common_t' in "common.h").
  */
 #include "includes.h"
 #include "marshaller.h"
@@ -25,15 +27,11 @@ int marshaller_init(void)
 
     int ret = -1;
 
-    /* Experienced developers may use other modules or even implement their own
-     * marshalling and unmarshalling techniques. For now, use "cPickle", on
-     * Python 2.7.x, and "_pickle" on Python 3.x.
-     */
 #if PY_MAJOR_VERSION >= 3
-    if((module = PyImport_ImportModuleNoBlock("_pickle")) == NULL)
+    if((module = PyImport_ImportModule("_pickle")) == NULL)
         goto _err;
 #else
-    if((module = PyImport_ImportModuleNoBlock("cPickle")) == NULL)
+    if((module = PyImport_ImportModule("cPickle")) == NULL)
         goto _err;
 #endif
 
@@ -41,12 +39,14 @@ int marshaller_init(void)
 
     if((marshal_method = PyDict_GetItemString(dict, "dumps")) == NULL)
     {
+        Py_DECREF(dict);
         Py_DECREF(module);
         goto _err;
     }
 
     if((unmarshal_method = PyDict_GetItemString(dict, "loads")) == NULL)
     {
+        Py_DECREF(dict);
         Py_DECREF(module);
         Py_DECREF(marshal_method);
         goto _err;
@@ -57,11 +57,14 @@ int marshaller_init(void)
      */
     if((proto = PyLong_FromLong(-1)) == NULL)
     {
+        Py_DECREF(dict);
         Py_DECREF(module);
         Py_DECREF(marshal_method);
         Py_DECREF(unmarshal_method);
         goto _err;
     }
+
+    Py_DECREF(dict);
 
     ret = 0;
 
@@ -71,7 +74,7 @@ _err:
 
 
 /* Marshal object `obj' and return a string object. */
-PyObject *marshal(PyObject *obj)
+PyObject *marshal(em_common_t *em_obj, PyObject *obj)
 {
     PyObject *r = NULL;
 
@@ -79,13 +82,18 @@ PyObject *marshal(PyObject *obj)
      * the dynamic function call below!
      */
     if(obj != NULL)
-        r = PyObject_CallFunctionObjArgs(marshal_method, obj, proto, NULL);
+    {
+        if(em_obj->pickler)
+            r = PyObject_CallFunctionObjArgs(em_obj->pickle, obj, NULL);
+        else
+            r = PyObject_CallFunctionObjArgs(marshal_method, obj, proto, NULL);
+    }
     return r;
 }
 
 
 /* Unmarshal object from string object `obj'. */
-PyObject *unmarshal(PyObject *obj)
+PyObject *unmarshal(em_common_t *em_obj, PyObject *obj)
 {
     PyObject *r = NULL;
 
@@ -93,7 +101,12 @@ PyObject *unmarshal(PyObject *obj)
      * the dynamic function call below!
      */
     if(obj != NULL)
-        r = PyObject_CallFunctionObjArgs(unmarshal_method, obj, NULL);
+    {
+        if(em_obj->unpickler)
+            r = PyObject_CallFunctionObjArgs(em_obj->unpickle, obj, NULL);
+        else
+            r = PyObject_CallFunctionObjArgs(unmarshal_method, obj, NULL);
+    }
     return r;
 }
 

@@ -85,7 +85,6 @@ static int em_dict_entry_is_free(em_dict_index_ent_t *ent)
 /* Iterator's `__iter__()' method. */
 static PyObject *em_dict_iter_iter(em_dict_iter_t *self)
 {
-    Py_INCREF(self);
     return (PyObject *)self;
 }
 
@@ -95,13 +94,10 @@ static PyObject *em_dict_iter_iternext(em_dict_iter_t *self)
 {
     em_dict_index_ent_t ent;
     char type;
-
     size_t max_pos = self->max_pos;
     size_t pos = self->pos;
     em_dict_t *em_dict = self->em_dict;
-
     PyObject *key = NULL, *value = NULL, *r = NULL;
-
 
     /* If we haven't finished iterating the elements of the external memory
      * dictionary, lookup the next non-free slot.
@@ -124,10 +120,10 @@ static PyObject *em_dict_iter_iternext(em_dict_iter_t *self)
         type = self->type;
 
         if(type == EM_DICT_ITER_ITEMS || type == EM_DICT_ITER_KEYS)
-            key = mapped_file_unmarshal_object(em_dict->keys, ent.key_pos);
+            key = mapped_file_unmarshal_object(EM_COMMON(em_dict), em_dict->keys, ent.key_pos);
 
         if(type == EM_DICT_ITER_ITEMS || type == EM_DICT_ITER_VALUES)
-            value = mapped_file_unmarshal_object(em_dict->values, ent.value_pos);
+            value = mapped_file_unmarshal_object(EM_COMMON(em_dict), em_dict->values, ent.value_pos);
 
         /* Return the appropriate object type based on the iterator's type. */
         if(type == EM_DICT_ITER_ITEMS)
@@ -191,10 +187,8 @@ static int em_dict_lookup(em_dict_t *self, PyObject *key, size_t *pi)
     PyObject *r;
     size_t mask, i, perturb;
     int eq;
-
     mapped_file_t *keys = self->keys;
     int ret = -1;
-
 
     if((hash = PyObject_Hash(key)) == -1)
         goto _err;
@@ -220,7 +214,7 @@ static int em_dict_lookup(em_dict_t *self, PyObject *key, size_t *pi)
     /* Now check if the hashes match. */
     else if(ent.hash == hash)
     {
-        if((r = mapped_file_unmarshal_object(keys, ent.key_pos)) != NULL)
+        if((r = mapped_file_unmarshal_object(EM_COMMON(self), keys, ent.key_pos)) != NULL)
         {
             eq = equal_objects(key, r);
             Py_DECREF(r);
@@ -254,7 +248,7 @@ static int em_dict_lookup(em_dict_t *self, PyObject *key, size_t *pi)
 
         else if(ent.hash == hash)
         {
-            if((r = mapped_file_unmarshal_object(keys, ent.key_pos)) != NULL)
+            if((r = mapped_file_unmarshal_object(EM_COMMON(self), keys, ent.key_pos)) != NULL)
             {
                 eq = equal_objects(key, r);
                 Py_DECREF(r);
@@ -282,9 +276,7 @@ static int em_dict_resize(em_dict_t *self)
     size_t mask, new_mask, num_ents, new_num_ents, size, new_size, i, j, perturb;
     mapped_file_t *mf;
     char *filename;
-
     int ret = -1;
-
 
     /* Store current values for later use. */
     index_hdr = self->index->address;
@@ -393,14 +385,13 @@ static PyObject *em_dict_getitem(em_dict_t *self, PyObject *key)
 {
     em_dict_index_ent_t ent;
     size_t i;
-
     PyObject *r = NULL;
 
     if(em_dict_lookup(self, key, &i) == 0)
     {
         memset(&ent, 0, sizeof(em_dict_index_ent_t));
         em_dict_get_entry(self->index, &ent, i);
-        r = mapped_file_unmarshal_object(self->values, ent.value_pos);
+        r = mapped_file_unmarshal_object(EM_COMMON(self), self->values, ent.value_pos);
     }
     else
         PyErr_SetString(PyExc_KeyError, "No such key");
@@ -417,12 +408,10 @@ static int em_dict_setitem(em_dict_t *self, PyObject *key, PyObject *value)
     Py_ssize_t hash;
     ssize_t key_pos, value_pos;
     size_t i;
-
     mapped_file_t *index = self->index;
     mapped_file_t *keys = self->keys;
     mapped_file_t *values = self->values;
     int ret = -1;
-
 
     ret = em_dict_lookup(self, key, &i);
 
@@ -458,11 +447,11 @@ static int em_dict_setitem(em_dict_t *self, PyObject *key, PyObject *value)
         {
             /* Marshal key object only if it's not already in the dictionary. */
             if(key_pos == 0 &&
-                    (key_pos = mapped_file_marshal_object(keys, key)) < 0)
+                    (key_pos = mapped_file_marshal_object(EM_COMMON(self), keys, key)) < 0)
                 goto _err;
 
             /* Marshal new value object. */
-            if((value_pos = mapped_file_marshal_object(values, value)) < 0)
+            if((value_pos = mapped_file_marshal_object(EM_COMMON(self), values, value)) < 0)
                 goto _err;
 
             /* Populate new index entry. */
@@ -506,9 +495,7 @@ static int em_dict_create(em_dict_t *self)
     em_dict_keys_hdr_t keys_hdr;
     em_dict_values_hdr_t values_hdr;
     char *filename;
-
     const char *dirname = self->dirname;
-
 
     /* Create directory to hold external memory dictionary files. */
     if(mk_dir(dirname) != 0)
@@ -572,10 +559,8 @@ static int em_dict_open_existing(em_dict_t *self)
     em_dict_keys_hdr_t *keys_hdr;
     em_dict_values_hdr_t *values_hdr;
     size_t pos;
-
     const char *dirname = self->dirname;
     char *filename;
-
 
     /* Open and verify "index.bin". */
     filename = path_combine(dirname, "index.bin");
@@ -630,15 +615,30 @@ _err1:
 
 
 /* Called by `em_dict_open()' and `em_dict_init()'. */
-static int em_dict_open_common(em_dict_t *self, PyObject *args)
+static int em_dict_open_common(em_dict_t *self, PyObject *args, PyObject *kwargs)
 {
-    char *dirname;
+    PyObject *pickler = NULL, *unpickler = NULL;
+
+    char *dirname, *kwarr[] = {
+        "dirname",
+        "pickler",
+        "unpickler",
+        NULL
+    };
 
     int ret = -1;
 
-
-    if(PyArg_ParseTuple(args, "s", &dirname) == 0)
-        goto _err;
+    if(kwargs)
+    {
+        if(PyArg_ParseTupleAndKeywords(args, kwargs, "s|OO", kwarr, &dirname,
+                &pickler, &unpickler) == 0)
+            goto _err;
+    }
+    else
+    {
+        if(PyArg_ParseTuple(args, "s", &dirname) == 0)
+            goto _err;
+    }
 
     if((self->dirname = PyMem_MALLOC(strlen(dirname) + 1)) == NULL)
     {
@@ -647,6 +647,12 @@ static int em_dict_open_common(em_dict_t *self, PyObject *args)
     }
 
     strcpy(self->dirname, dirname);
+
+    if(pickler && valid_pickler(pickler, &self->pickle) == 0)
+        self->pickler = pickler;
+
+    if(unpickler && valid_unpickler(unpickler, &self->unpickle) == 0)
+        self->unpickler = unpickler;
 
     /* XXX: There's an obvious race condition here, should we care? */
     if(access(self->dirname, F_OK) == 0)
@@ -673,7 +679,7 @@ static PyObject *em_dict_open(em_dict_t *self, PyObject *args)
         goto _err;
     }
 
-    if(em_dict_open_common(self, args) != 0)
+    if(em_dict_open_common(self, args, NULL) != 0)
         goto _err;
 
     Py_INCREF(Py_True);
@@ -758,10 +764,15 @@ static PyObject *em_dict_values(em_dict_t *self, PyObject *Py_UNUSED(args))
     return em_dict_iterator_new(self, EM_DICT_ITER_VALUES);
 }
 
+/* Get default iterator for `__iter__()'. */
+static PyObject *em_dict_iter(em_dict_t *self)
+{
+    return em_dict_iterator_new(self, EM_DICT_ITER_KEYS);
+}
 
 
 /* Called via `tp_init()'. */
-static int em_dict_init(em_dict_t *self, PyObject *args, PyObject *Py_UNUSED(kwargs))
+static int em_dict_init(em_dict_t *self, PyObject *args, PyObject *kwargs)
 {
     int ret = -1;
 
@@ -771,7 +782,7 @@ static int em_dict_init(em_dict_t *self, PyObject *args, PyObject *Py_UNUSED(kwa
         goto _err;
     }
 
-    if(em_dict_open_common(self, args) != 0)
+    if(em_dict_open_common(self, args, kwargs) != 0)
         goto _err;
 
     ret = 0;
@@ -834,10 +845,12 @@ static PyTypeObject em_dict_type =
     .tp_dealloc = (destructor)em_dict_dealloc,
     .tp_as_sequence = &em_dict_sequence_proto,
     .tp_as_mapping = &em_dict_mapping_proto,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = "External memory dictionary implementation.",
     .tp_methods = em_dict_methods,
     .tp_members = em_dict_members,
+    .tp_iter = (getiterfunc)em_dict_iter,
+    .tp_iternext = (iternextfunc)em_dict_iter_iternext,
     .tp_init = (initproc)em_dict_init,
     .tp_new = PyType_GenericNew
 };

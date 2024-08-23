@@ -2,6 +2,7 @@
 #define _MAPPED_FILE_H_
 
 #include "includes.h"
+#include "common.h"
 #include "rbtree.h"
 
 
@@ -62,8 +63,8 @@ size_t mapped_file_get_eof(mapped_file_t *);
 ssize_t mapped_file_allocate_chunk(mapped_file_t *, size_t);
 void mapped_file_free_chunk(mapped_file_t *, size_t);
 
-ssize_t mapped_file_marshal_object(mapped_file_t *, PyObject *);
-PyObject *mapped_file_unmarshal_object(mapped_file_t *, size_t);
+ssize_t mapped_file_marshal_object(em_common_t *, mapped_file_t *, PyObject *);
+PyObject *mapped_file_unmarshal_object(em_common_t *, mapped_file_t *, size_t);
 
 mapped_file_t *mapped_file_open(const char *);
 mapped_file_t *mapped_file_create(const char *, size_t);

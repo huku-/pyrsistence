@@ -31,6 +31,11 @@ typedef struct em_list_values_hdr
 typedef struct em_list
 {
     PyObject_HEAD
+    /* See `em_common_t' in "common.h" for an explanation of the fields below. */
+    PyObject *pickler;
+    PyObject *pickle;
+    PyObject *unpickler;
+    PyObject *unpickle;
     char *dirname;              /* Directory holding memory mapped files */
     mapped_file_t *index;       /* Memory mapped file for indeces */
     mapped_file_t *values;      /* Memory mapped file for values */

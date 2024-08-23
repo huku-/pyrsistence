@@ -109,3 +109,45 @@ int equal_objects(PyObject *obj1, PyObject *obj2)
         PyObject_Cmp(obj1, obj2, &result) != -1 && result == 0);
 #endif
 }
+
+
+/* Make sure `obj' has a `pickle()' method and return a reference to the latter. */
+int valid_pickler(PyObject *obj, PyObject **picklep)
+{
+    PyObject *pickle;
+    int ret = -1;
+
+    if((pickle = PyObject_GetAttrString(obj, "pickle")) == NULL)
+        goto _ret;
+
+    if(PyCallable_Check(pickle) != 1)
+        goto _ret;
+
+    *picklep = pickle;
+
+    ret = 0;
+
+_ret:
+    return ret;
+}
+
+
+/* Make sure `obj' has a `unpickle()' method and return a reference to the latter. */
+int valid_unpickler(PyObject *obj, PyObject **unpicklep)
+{
+    PyObject *unpickle;
+    int ret = -1;
+
+    if((unpickle = PyObject_GetAttrString(obj, "unpickle")) == NULL)
+        goto _ret;
+
+    if(PyCallable_Check(unpickle) != 1)
+        goto _ret;
+
+    *unpicklep = unpickle;
+
+    ret = 0;
+
+_ret:
+    return ret;
+}

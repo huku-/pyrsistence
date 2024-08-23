@@ -413,7 +413,8 @@ PyObject *mapped_file_unmarshal_object(em_common_t *em_obj, mapped_file_t *mf,
 #endif
 
     ret = unmarshal(em_obj, str);
-    /* Py_DECREF(str); */
+
+    Py_DECREF(str);
 
 _err:
     return ret;

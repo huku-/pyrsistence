@@ -39,14 +39,12 @@ int marshaller_init(void)
 
     if((marshal_method = PyDict_GetItemString(dict, "dumps")) == NULL)
     {
-        Py_DECREF(dict);
         Py_DECREF(module);
         goto _err;
     }
 
     if((unmarshal_method = PyDict_GetItemString(dict, "loads")) == NULL)
     {
-        Py_DECREF(dict);
         Py_DECREF(module);
         Py_DECREF(marshal_method);
         goto _err;
@@ -57,14 +55,11 @@ int marshaller_init(void)
      */
     if((proto = PyLong_FromLong(-1)) == NULL)
     {
-        Py_DECREF(dict);
         Py_DECREF(module);
         Py_DECREF(marshal_method);
         Py_DECREF(unmarshal_method);
         goto _err;
     }
-
-    Py_DECREF(dict);
 
     ret = 0;
 
@@ -88,6 +83,7 @@ PyObject *marshal(em_common_t *em_obj, PyObject *obj)
         else
             r = PyObject_CallFunctionObjArgs(marshal_method, obj, proto, NULL);
     }
+
     return r;
 }
 
@@ -107,6 +103,7 @@ PyObject *unmarshal(em_common_t *em_obj, PyObject *obj)
         else
             r = PyObject_CallFunctionObjArgs(unmarshal_method, obj, NULL);
     }
+
     return r;
 }
 

@@ -371,7 +371,6 @@ static PyObject *em_list_iter_iternext(em_list_iter_t *self)
 static void em_list_iter_dealloc(em_list_iter_t *self)
 {
     Py_DECREF(self->em_list);
-    PyObject_Del(self);
 }
 
 static PyTypeObject em_list_iter_type =
@@ -642,8 +641,7 @@ _err:
 /* Called via `tp_dealloc()'. */
 static void em_list_dealloc(em_list_t *self)
 {
-    PyObject *r = em_list_close(self, NULL);
-    Py_DECREF(r);
+    em_list_close(self, NULL);
     PyObject_Del(self);
 }
 

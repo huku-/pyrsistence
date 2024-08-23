@@ -150,7 +150,6 @@ _err:
 static void em_dict_iter_dealloc(em_dict_iter_t *self)
 {
     Py_DECREF(self->em_dict);
-    PyObject_Del(self);
 }
 
 static PyTypeObject em_dict_iter_type =
@@ -795,8 +794,7 @@ _err:
 /* Called via `tp_dealloc()'. */
 static void em_dict_dealloc(em_dict_t *self)
 {
-    PyObject *r = em_dict_close(self, NULL);
-    Py_DECREF(r);
+    em_dict_close(self, NULL);
     PyObject_Del(self);
 }
 

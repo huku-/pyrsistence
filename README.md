@@ -63,7 +63,7 @@ Here are some real life examples:
 
 * An `EMGraph` implementation based on `EMDict`, which integrates with NetworkX,
   can be found [here](examples/em_graph.py). A more advanced example, utilizing
-  custom serialization and deserialization logic is [here](examples/em_graph_pickle.py).
+  custom serialization and deserialization logic is [here](examples/em_graph_pickler.py).
   Have a look at the wiki for a deeper explanation.
 
 For more information, have a look at the [wiki](https://github.com/huku-/pyrsistence/wiki).

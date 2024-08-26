@@ -34,10 +34,37 @@ Alternatively, you can add `git+https://github.com/huku-/pyrsistence.git` in you
 project's **requirements.txt**.
 
 
-## Using
+## Quick start
 
 Using **pyrsistence** is straightforward, as it exposes a minimal `list`-like and
-`dict`-like API. See **tests/** for some examples.
+`dict`-like API:
+
+    import pyrsistence
+
+    em_dict = pyrsistence.EMDict("/tmp/em_dict")
+    em_dict["a"] = 1
+    em_dict["b"] = 2
+    print(list(em_dict.items()))
+    em_dict.close()
+
+    em_list = pyrsistence.EMList("/tmp/em_list")
+    em_list.append(1)
+    em_list.append(2)
+    print(list(em_list))
+    em_list.close()
+
+Here are some real life examples:
+
+* [Here](https://github.com/huku-/xde/blob/master/xde/em_shadow_memory.py) is a
+  simple shadow memory implementation based on `EMList`
+
+* [Here](https://github.com/huku-/xde/blob/master/xde/em_graph.py) simple graph
+  implementation based on `EMDict`
+
+* An `EMGraph` implementation based on `EMDict`, which integrates with NetworkX,
+  can be found [here](examples/em_graph.py). A more advanced example, utilizing
+  custom serialization and deserialization logic is [here](examples/em_graph_pickle.py).
+  Have a look at the wiki for a deeper explanation.
 
 For more information, have a look at the [wiki](https://github.com/huku-/pyrsistence/wiki).
 

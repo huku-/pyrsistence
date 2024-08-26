@@ -4,11 +4,11 @@
 # Python 2.x and 3.x.
 #
 
+import functools
 import os
 import platform
 import setuptools
 import sys
-import functools
 
 
 @functools.cache

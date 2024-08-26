@@ -1,25 +1,19 @@
 #ifndef _MAPPED_FILE_H_
 #define _MAPPED_FILE_H_
 
-#include "includes.h"
 #include "common.h"
 #include "rbtree.h"
 
-
 #ifdef _WIN32
-
+#include <Windows.h>
 #define MF_ACCESS_NORMAL     0
 #define MF_ACCESS_RANDOM     0
 #define MF_ACCESS_SEQUENTIAL 0
-
 #else /* _WIN32 */
-
 #define MF_ACCESS_NORMAL     MADV_NORMAL
 #define MF_ACCESS_RANDOM     MADV_RANDOM
 #define MF_ACCESS_SEQUENTIAL MADV_SEQUENTIAL
-
 #endif /* _WIN32 */
-
 
 /* Macros used by the allocator API. */
 #define MASK         (~(sizeof(size_t) - 1))

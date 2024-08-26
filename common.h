@@ -1,6 +1,7 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include <Python.h>
 
 /* Magic number common to all files is "EMD\0HDR\0". */
 #define MAGIC 0x0052444800444d45
@@ -20,6 +21,10 @@
 
 
 #ifdef _WIN32
+#include <BaseTsd.h>
+
+typedef SSIZE_T ssize_t;
+typedef SIZE_T size_t;
 
 #ifdef _WIN64
 #define HIDWORD(x) ((x) >> 32)

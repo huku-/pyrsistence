@@ -11,7 +11,8 @@
  * However, the API allows for EM types to implement their own serialization and
  * deserialization methods (see `em_common_t' in "common.h").
  */
-#include "includes.h"
+#include <Python.h>
+
 #include "marshaller.h"
 
 

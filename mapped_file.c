@@ -18,11 +18,15 @@
  * Bewarned that this code is still experimental and various integer related
  * bugs may be present. Let me know if you happen to hit any!
  */
-#include "includes.h"
-#include "marshaller.h"
-#include "common.h"
+#ifndef _WIN32
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#endif
+
 #include "util.h"
-#include "rbtree.h"
+#include "marshaller.h"
 #include "mapped_file.h"
 
 
@@ -604,18 +608,16 @@ int mapped_file_truncate(mapped_file_t *mf, size_t size)
 {
     LARGE_INTEGER lsize;
     void *address;
-
-    void *mf_address = mf->address;
     int ret = -1;
+
+    /* We need to unmap before actually re-mapping the file. Unfortunately,
+     * there's no `mremap()' equivalent on Microsoft Windows.
+     */
+    UnmapViewOfFile(mf->address);
 
     lsize.QuadPart = size;
     if((address = map_file(mf->fd, lsize)) == NULL)
         goto _err;
-
-    /* Unmap the old mapping only as soon as we have succesfully allocated a new
-     * one. Unfortunately, there's no `mremap()' equivalent on Microsoft Windows.
-     */
-    UnmapViewOfFile(mf_address);
 
     mf->address = address;
     mf->size = size;

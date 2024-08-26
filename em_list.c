@@ -3,9 +3,11 @@
  *
  * em_list.c - External memory list implementation.
  */
-#include "includes.h"
-#include "common.h"
+#include <Python.h>
+#include <structmember.h>
+
 #include "util.h"
+#include "common.h"
 #include "mapped_file.h"
 #include "em_list.h"
 

@@ -5,27 +5,47 @@
 #
 
 import os
+import platform
 import setuptools
 import sys
+import functools
 
 
-DIR = os.path.dirname(os.path.abspath(__file__))
+@functools.cache
+def get_dir():
+    return os.path.dirname(os.path.abspath(__file__))
 
-CFLAGS = [
-    "-ggdb",
-    "-Wall",
-    "-Wextra",
-    "-O2",
-    "-fPIC",
-    # "-DDEBUG"
-]
+
+def get_cflags():
+    cflags = []
+    system = platform.system().lower()
+    if system == "linux":
+        cflags += [
+            "-ggdb",
+            "-Wall",
+            "-Wextra",
+            "-O2",
+            "-fPIC",
+            "-D_GNU_SOURCE",
+            "-D_FILE_OFFSET_BITS=64",
+            # "-DDEBUG"
+        ]
+    elif system == "windows":
+        cflags += [
+            "/nologo",
+            "/Zi",
+            "/W3",
+            "/O2",
+            # "/D DEBUG"
+        ]
+    return cflags
 
 
 def get_sources():
     return [
         name
-        for name in os.listdir(DIR)
-        if os.path.isfile(os.path.join(DIR, name)) and name.endswith(".c")
+        for name in os.listdir(get_dir())
+        if os.path.isfile(os.path.join(get_dir(), name)) and name.endswith(".c")
     ]
 
 
@@ -33,8 +53,8 @@ def main(argv):
 
     pyrsistence_mod = setuptools.Extension(
         "pyrsistence",
-        extra_compile_args=CFLAGS,
-        sources=[os.path.join(DIR, name) for name in get_sources()],
+        extra_compile_args=get_cflags(),
+        sources=[os.path.join(get_dir(), name) for name in get_sources()],
     )
 
     setuptools.setup(

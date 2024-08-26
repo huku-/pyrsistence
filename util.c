@@ -3,9 +3,11 @@
  *
  * util.c - Home of various helper functions that don't fit anywhere else.
  */
-#include "includes.h"
 #include "util.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 #ifdef DEBUG
 /* Prints a debugging message if `DEBUG' is defined. */

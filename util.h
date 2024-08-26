@@ -1,7 +1,7 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-#include "includes.h"
+#include <Python.h>
 
 #ifdef _WIN32
 #define PATH_MAX MAX_PATH
@@ -10,11 +10,10 @@
 #define PATH_SEP '/'
 #endif
 
-
 #ifdef DEBUG
 void msgf(const char *, ...);
 #else
-#define msgf(fmt...)
+#define msgf(fmt, ...)
 #endif /* DEBUG */
 
 void serror(const char *);

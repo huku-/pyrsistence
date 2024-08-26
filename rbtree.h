@@ -1,8 +1,6 @@
 #ifndef _RBTREE_H_
 #define _RBTREE_H_
 
-#include "includes.h"
-
 #define RBTREE_FIRST(t)    ((t)->root.left)
 #define RBTREE_ROOT(t)     (&(t)->root)
 #define RBTREE_NIL(t)      (&(t)->nil)

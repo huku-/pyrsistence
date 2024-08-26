@@ -3,9 +3,7 @@
  *
  * pyrsistence.c - Python extension entry point.
  */
-#include "includes.h"
 #include "marshaller.h"
-#include "common.h"
 #include "em_dict.h"
 #include "em_list.h"
 

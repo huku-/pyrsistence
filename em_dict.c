@@ -3,12 +3,13 @@
  *
  * em_dict.c - External memory dictionary implementation.
  */
-#include "includes.h"
-#include "common.h"
+#include <Python.h>
+#include <structmember.h>
+
 #include "util.h"
+#include "common.h"
 #include "mapped_file.h"
 #include "em_dict.h"
-
 
 
 #define EM_DICT_E2S(x) \
@@ -16,7 +17,6 @@
 
 #define EM_DICT_S2E(x) \
     (((x) - sizeof(em_dict_index_hdr_t)) / sizeof(em_dict_index_ent_t))
-
 
 
 /* Gets the "index.bin" entry at index `i'. */
